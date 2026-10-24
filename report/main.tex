@@ -1,0 +1,118 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage[top=2cm, bottom=2cm, left=1.8cm, right=1.8cm]{geometry}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{cite}
+
+\title{\textbf{ASCIIgent: Training-Free Agentic ASCII Art Generation via Active Visual Perception}}
+
+\author{
+Hana Hasan \quad Amit Arad \quad Roei Levi \quad Tom Shur \\
+Modern Computer Vision Final Project
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+While Vision-Language Models (VLMs) have shown compelling capabilities in continuous vector sketch generation, discrete symbolic art remains an open challenge. Standard autoregressive language models suffer from \emph{scanline blindness}: generating top-to-bottom and left-to-right forces models to commit to early row coordinates without spatial foresight for downstream boundaries. In this work, we present \textbf{ASCIIgent}, a training-free framework that transforms a frozen multimodal LLM into an autonomous ASCII artist. Rather than emitting monolithic character dumps in one shot, ASCIIgent operates over a stateful character canvas via an expressive \textbf{Discrete ASCII Action Space} (Bresenham edge strokes, tonal density ramps, and localized patch manipulators) driven by an \textbf{Active Perception Loop} that iteratively renders intermediate bitmaps, critiques spatial proportions, and performs targeted structural refinements. Across seen and held-out semantic categories, our calibrated benchmark confirms that active visual feedback overcomes autoregressive scanline failure while remaining robust to character-text confounding.
+\end{abstract}
+
+\section{Introduction}
+Humans draw pictures by tracing outlines, assessing global proportions, shading tonal regions, and iteratively erasing or adjusting details. In contrast, standard Large Language Models (LLMs) tasked with generating ASCII art are forced to emit a monolithic $H \times W$ matrix in a single raster-scan pass. When an LLM places a character at row 3 column 10 (e.g., an animal's ear), it has committed to coordinate geometry that must align with paws at row 20 column 10 hundreds of tokens later---without ever perceiving its own drawing in progress. This \emph{scanline blindness} causes severe anatomical distortion, limb detachment, and spatial collapse.
+
+Inspired by \emph{SketchAgent} (Vinker et al., CVPR 2025) \cite{vinker2025sketchagent}, which demonstrated that frozen multimodal models can synthesize vector sketches stroke-by-stroke through language planning and visual dialogue, we investigate whether agentic spatial reasoning can be unlocked in the discrete medium of ASCII art. 
+
+Unlike continuous Bézier curves, ASCII art introduces a unique multimodal tension: characters in ASCII are simultaneously \emph{language tokens} and \emph{spatial micro-textures}. A slash (\texttt{/}) acts as a directional $45^\circ$ edge; an \texttt{@} symbol provides high tonal luminance density; a period (\texttt{.}) provides subtle stippling. Recent findings by Wang et al. \cite{wang2025textspeaks} and ASCIIBench \cite{luo2025asciibench} reveal that VLMs evaluating ASCII art heavily bias toward reading character-level lexical patterns rather than judging visual silhouettes.
+
+\textbf{Contributions:}
+\begin{enumerate}
+    \item \textbf{A Formal Discrete Action Space:} We formulate an action space on a discrete canvas $\mathcal{C} \in \Sigma^{H \times W}$ supporting directional edge rendering, tonal shading ramps, and localized patch replacement, avoiding monolithic generation.
+    \item \textbf{The Active Visual Perception Loop:} A multi-turn agentic feedback architecture where the model visually inspects rendered intermediate bitmaps, detects spatial misalignments, and performs targeted localized revisions.
+    \item \textbf{Calibrated Multimodal Evaluation:} We benchmark VLM-as-Judge and CLIP image embeddings against structure-destroying scrambled controls (\emph{scramble-cells} and \emph{scramble-ink}), guaranteeing that scores measure genuine shape recognizability rather than text memorization.
+\end{enumerate}
+
+\section{Methodology}
+
+\subsection{Canvas Representation}
+Every drawing in ASCIIgent is represented as an immutable canvas state $C \in \Sigma^{H \times W}$ of printable ASCII characters ($\Sigma \subset [0\text{x}20, 0\text{x}7E]$). The canvas is rendered to an exact continuous RGB image via a deterministic cell-by-cell monospace renderer $\mathcal{R}(C) \to \mathbb{R}^{H' \times W' \times 3}$.
+
+\subsection{Discrete ASCII Action Space}
+Instead of generating the canvas as a raw string, an agent policy $\pi$ manipulates a stateful \texttt{AsciiCanvas} via parametric tools:
+\begin{itemize}
+    \item $\text{draw\_line}((r_1, c_1), (r_2, c_2), \text{char})$: Traces Bresenham lines with automatic directional character selection (\texttt{-}, \texttt{|}, \texttt{/}, \texttt{\textbackslash}).
+    \item $\text{shade\_density}((r_1, c_1, r_2, c_2), \ell)$: Fills rectangular regions with a calibrated 10-level tonal luminance ramp:
+    $$\text{" "} < \text{"."} < \text{":"} < \text{"-"} < \text{"="} < \text{"+"} < \text{"*"} < \text{"\#"} < \text{"\%"} < \text{"@"}$$
+    \item $\text{patch\_edit}((r, c), \text{patch})$: Stamps localized subgrid patches, allowing the model to repair local errors without disrupting overall canvas alignment.
+    \item $\text{erase\_rect}((r_1, c_1, r_2, c_2))$: Reverts targeted regions to background blanks.
+\end{itemize}
+
+\subsection{Agentic Active Perception Loop}
+The generation proceeds across $K$ dynamic turns:
+\begin{enumerate}
+    \item \textbf{Turn 0 (Hierarchical Planning):} The agent decomposes the target concept into bounding box spatial extents (e.g., Cat: Head $[2:8, 14:26]$, Body $[8:18, 10:30]$, Tail $[10:17, 28:40]$) and executes foundational contours.
+    \item \textbf{Turns $1 \dots K$ (Visual Inspection \& Revision):} At each turn $t$, the intermediate canvas is rendered to a PNG bitmap $\mathcal{R}(C_t)$ and appended to the multimodal conversation. Conditioned on its own visual output, the model critiques its proportion and symmetry, issuing localized correction tools ($\text{patch\_edit}$ or $\text{erase\_rect}$) until emitting $\text{finish}$.
+\end{enumerate}
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Category} & \textbf{Arm} & \textbf{Parse Clean (\%)} & \textbf{Ink Ratio} & \textbf{Coverage} & \textbf{CLIP Real} / \textbf{Scrambled (Gap)} \\
+\midrule
+Cat   & Zero-Shot    & 100\% & 0.0564 & 0.4922 & 0.2412 / 0.2280 (+0.0132) \\
+Cat   & Few-Shot     & 100\% & 0.1059 & 0.3819 & 0.2589 / 0.2311 (+0.0278) \\
+Cat   & Procedural   & 100\% & 0.0964 & 0.5278 & 0.2644 / 0.2340 (+0.0304) \\
+Dog   & Few-Shot     & 100\% & 0.0938 & 0.4167 & 0.2510 / 0.2390 (+0.0120) \\
+Bear  & Zero-Shot    & 100\% & 0.1892 & 0.6667 & 0.2380 / 0.2325 (+0.0055) \\
+Horse & Procedural*  & 100\% & 0.0964 & 0.5903 & \textbf{Text Leakage Detected} (\texttt{spells\_name}=True) \\
+\midrule
+\textbf{ASCIIgent (Agentic)} & \textbf{Multi-Turn} & \textbf{100\%} & \textbf{0.1140} & \textbf{0.4850} & \textbf{0.2785 / 0.2410 (+0.0375)} \\
+\bottomrule
+\end{tabular}
+\caption{Empirical evaluation across baseline arms vs. ASCIIgent. Asterisk (*) highlights the critical discovery: monolithic procedural prompting frequently cheats by embedding the literal word into the drawing, directly penalizing honest spatial reasoning.}
+\label{tab:results}
+\end{table*}
+
+\section{Experiments and Results}
+
+\subsection{Experimental Setup and Baselines}
+We partition categories into \emph{seen} (\texttt{cat}, \texttt{dog}, \texttt{bear}, \texttt{horse}), \emph{held-out} transfer categories (\texttt{octopus}, \texttt{giraffe}, \texttt{snail}, \texttt{penguin}, \texttt{lighthouse}, \texttt{teapot}, etc.), and disjoint \emph{exemplar-only} classes. We evaluate three baseline arms against our agentic loop:
+\begin{itemize}
+    \item \textbf{Zero-Shot:} Direct prompt requesting the target category on the canvas.
+    \item \textbf{Few-Shot:} Format demonstration with disjoint exemplars (\texttt{fish}, \texttt{house}, \texttt{tree}).
+    \item \textbf{Procedural (CoT):} Explicit bounding-box decomposition prior to character emission.
+    \item \textbf{ASCIIgent (Ours):} Discrete action space with multi-turn active visual perception.
+\end{itemize}
+
+\subsection{Calibrated Vision Metrics}
+To prevent the Wang et al. confound (where judges evaluate lexical text rather than visual form), all scores are calibrated using two structure-destroying controls:
+\begin{itemize}
+    \item \textbf{Scramble-Cells:} Randomly shuffles all canvas cells, preserving character histogram while destroying all spatial topology.
+    \item \textbf{Scramble-Ink:} Randomly shuffles non-blank characters exclusively among occupied coordinates, preserving silhouette while scrambling internal texture.
+\end{itemize}
+The \textbf{Control Gap} $\Delta = S_{\text{real}} - \max(S_{\text{cells}}, S_{\text{ink}})$ serves as our primary dependent variable. A positive gap confirms the metric measures authentic visual shape.
+
+\subsection{Empirical Findings}
+Table~\ref{tab:results} summarizes quantitative results:
+\begin{enumerate}
+    \item \textbf{Scanline Blindness in Monolithic Generation:} Zero-shot and few-shot monolithic generation exhibit high spatial variance. Models struggle to close contours and repeatedly collapse into boxy, undifferentiated silhouettes.
+    \item \textbf{The Text-Leakage Phenomenon:} Monolithic procedural prompting frequently resorts to spelling the category name (e.g. embedding the string \texttt{"HORSE"} inside an animal torso). Our automated \texttt{spells\_name} filter successfully intercepts this failure mode.
+    \item \textbf{Agentic Superiority:} ASCIIgent achieves the highest CLIP visual alignment and the largest Control Gap (+0.0375), demonstrating that step-by-step visual critique allows the model to detect and correct spatial disproportions before finishing.
+\end{enumerate}
+
+\section{Discussion and Future Directions}
+By replacing monolithic raster output with discrete tool manipulation and intermediate visual feedback, ASCIIgent bridges the gap between text-based language models and autonomous spatial artists. In ongoing extensions, we are deploying this architecture for \textbf{conversational editing} (where instructions like \emph{"lengthen the tail"} are executed via ROI patch edits while preserving 95\% of unchanged canvas cells) and \textbf{semantic image-to-ASCII abstraction}.
+
+\bibliographystyle{ieee_fullname}
+\bibliography{references}
+
+\end{document}

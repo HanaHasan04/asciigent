@@ -1,0 +1,21 @@
+# Environment & Keys
+.env
+*.env
+.cache/
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Runs output (preserve index.jsonl / samples as needed, ignore local artifacts)
+runs/*/
+!runs/index.jsonl
+!runs/p1_contact_sheet.png
+
+# Pytest & Coverage
+.pytest_cache/
+.coverage
+htmlcov/

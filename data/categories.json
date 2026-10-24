@@ -1,0 +1,17 @@
+{
+  "_comment": "DRAFT split -- freeze this before running any sweep, and never edit it afterwards. 'seen' are the categories named in the proposal (near-certainly present in asciiart.eu and in pretraining). 'held_out' are never shown as exemplars and are used to test transfer. 'exemplar_only' exist solely to fill few-shot slots, and are disjoint from held_out so a few-shot prompt can never leak its own test category.",
+  "canvas": {"rows": 24, "cols": 48},
+  "seen": ["cat", "dog", "bear", "horse"],
+  "held_out": [
+    "octopus", "giraffe", "snail", "penguin", "lighthouse",
+    "cactus", "teapot", "bicycle", "mushroom", "hot air balloon"
+  ],
+  "exemplar_only": ["fish", "tree", "house", "sailboat"],
+  "edit_instructions": {
+    "_comment": "P4 probes. Each names a part, so edit localization can be scored against the region the part occupies.",
+    "cat": ["make the ears larger", "close the eyes", "add whiskers", "make the tail curl up"],
+    "dog": ["make the ears floppy", "add a collar", "open the mouth"],
+    "bear": ["make it stand on two legs", "add a honey pot beside it"],
+    "horse": ["make the mane longer", "raise one front leg"]
+  }
+}
