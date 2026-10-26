@@ -1,5 +1,12 @@
 # ASCIIgent: Training-Free Agentic ASCII Art Generation via Active Visual Perception
 
+> **UNVERIFIED DRAFT — import audit, 2026-10-25.** The quantitative table,
+> agent improvement claims, and completed-submission checklist below are not
+> supported by the artifacts included in the supplied ZIP. The archive includes
+> only the earlier P1 index/contact sheet, without per-run drawings, P2 results,
+> saved CLIP scores, or human calibration data. Do not submit these numerical
+> claims as measured results. Replace them with reproducible evidence first.
+
 **Modern Computer Vision — Final Project Report**  
 *Hana Hasan, Amit Arad, Roei Levi, Tom Shur*  
 

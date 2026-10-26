@@ -16,8 +16,16 @@ from typing import Any
 from .actions import ActionResult, AsciiCanvas, parse_action_blocks
 from .grid import DEFAULT_COLS, DEFAULT_ROWS, AsciiGrid
 from .llm import LLMClient
-from .prompts.agent import agent_critique_prompt, agent_initial_prompt, agent_system_prompt
+from .prompts.agent import (
+    agent_critique_prompt,
+    agent_critique_text_prompt,
+    agent_initial_prompt,
+    agent_no_feedback_prompt,
+    agent_system_prompt,
+)
 from .render import RenderStyle, render_to_png_bytes
+
+FEEDBACK_MODES = ("visual", "text_only", "no_feedback")
 
 
 @dataclass
@@ -50,8 +58,14 @@ def run_agent_drawing_session(
     cols: int = DEFAULT_COLS,
     render_style: RenderStyle | None = None,
     sample_index: int = 0,
+    feedback: str = "visual",
 ) -> AgentSessionResult:
-    """Run an autonomous agentic drawing session with active visual feedback."""
+    """Run an autonomous agentic drawing session with visual, text-only, or no feedback."""
+    if max_turns < 1:
+        raise ValueError("max_turns must be positive")
+    if feedback not in FEEDBACK_MODES:
+        raise ValueError(f"unknown feedback mode {feedback!r}; expected one of {FEEDBACK_MODES}")
+
     canvas = AsciiCanvas(rows=rows, cols=cols)
     system = agent_system_prompt(rows, cols)
     style = render_style or RenderStyle()
@@ -65,12 +79,20 @@ def run_agent_drawing_session(
             images = []
         else:
             grid_current = canvas.to_grid()
-            png_bytes = render_to_png_bytes(grid_current, style=render_style)
-            prompt = (
-                f"Conversation History so far:\n{history_transcript}\n\n"
-                + agent_critique_prompt(category, turn=turn_idx, max_turns=max_turns)
-            )
-            images = [png_bytes]
+            if feedback == "visual":
+                png_bytes = render_to_png_bytes(grid_current, style=style)
+                critique = agent_critique_prompt(category, turn=turn_idx, max_turns=max_turns)
+                images = [png_bytes]
+            elif feedback == "text_only":
+                critique = agent_critique_text_prompt(
+                    category, grid_current.to_text(), turn=turn_idx, max_turns=max_turns
+                )
+                images = []
+            else:  # no_feedback
+                critique = agent_no_feedback_prompt(category, turn=turn_idx, max_turns=max_turns)
+                images = []
+
+            prompt = f"Conversation History so far:\n{history_transcript}\n\n{critique}"
 
         # Call the client with multimodal support
         resp = client.complete(
@@ -81,7 +103,11 @@ def run_agent_drawing_session(
         )
 
         content_text = resp.text
+        if resp.empty:
+            raise ValueError("agent returned an empty response")
         commands = parse_action_blocks(content_text)
+        if not commands:
+            raise ValueError("agent returned no parseable drawing actions")
 
         # Execute actions on the mutable canvas
         results: list[ActionResult] = []
@@ -90,7 +116,7 @@ def run_agent_drawing_session(
         for cmd in commands:
             if cmd.get("action") == "finish":
                 is_finished = True
-                continue
+                break
             res = canvas.execute_action(cmd)
             results.append(res)
 
@@ -107,6 +133,7 @@ def run_agent_drawing_session(
         )
 
         history_transcript += f"\n--- Turn {turn_idx} ---\n{content_text}\n"
+        history_transcript += f"Action execution results: {results!r}\n"
 
         if is_finished or turn_idx == max_turns:
             session.stop_reason = "finish_action" if is_finished else "max_turns_reached"

@@ -21,6 +21,12 @@ Modern Computer Vision Final Project
 \begin{document}
 \maketitle
 
+\noindent\textbf{UNVERIFIED DRAFT (2026-10-25).}
+The quantitative results and improvement claims in this imported draft cannot
+be verified from the supplied run artifacts. P2 comparisons and human
+calibration remain outstanding. Replace unsupported numbers with reproducible
+measurements before submission.
+
 \begin{abstract}
 While Vision-Language Models (VLMs) have shown compelling capabilities in continuous vector sketch generation, discrete symbolic art remains an open challenge. Standard autoregressive language models suffer from \emph{scanline blindness}: generating top-to-bottom and left-to-right forces models to commit to early row coordinates without spatial foresight for downstream boundaries. In this work, we present \textbf{ASCIIgent}, a training-free framework that transforms a frozen multimodal LLM into an autonomous ASCII artist. Rather than emitting monolithic character dumps in one shot, ASCIIgent operates over a stateful character canvas via an expressive \textbf{Discrete ASCII Action Space} (Bresenham edge strokes, tonal density ramps, and localized patch manipulators) driven by an \textbf{Active Perception Loop} that iteratively renders intermediate bitmaps, critiques spatial proportions, and performs targeted structural refinements. Across seen and held-out semantic categories, our calibrated benchmark confirms that active visual feedback overcomes autoregressive scanline failure while remaining robust to character-text confounding.
 \end{abstract}

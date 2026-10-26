@@ -3,6 +3,16 @@
 > **Modern Computer Vision — Final Project & CVPR Research Prototype**  
 > Hana Hasan, Amit Arad, Roei Levi, Tom Shur
 
+> **Import audit — 2026-10-25:** This is a research prototype, not a completed
+> experimental submission. P2 currently implements visual feedback only; its
+> no-feedback and text-only critique controls remain to be implemented. The
+> report contains numerical claims that cannot be verified from the supplied
+> run artifacts. Treat both report versions as unverified drafts. The ZIP did
+> not include Git history or individual drawing directories. CLIP additionally
+> requires PyTorch, the OpenAI CLIP package, and model weights; these are not
+> included in `requirements.txt`. Original imported files and the previous
+> README are preserved under `.update-backup-20261025/`.
+
 ASCIIgent investigates whether Large Language Models (LLMs) can draw with a 95-character discrete alphabet through generalizable spatial reasoning rather than memorized recall, and whether a training-free agentic loop—**draft $\to$ render $\to$ visually perceive $\to$ revise**—overcomes the fundamental *autoregressive scanline blindness* of standard models.
 
 ---
@@ -51,7 +61,7 @@ asciigent/
 │       ├── agent.py             # Prompts for agent actions and visual critique
 │       ├── judge.py             # Separate identify and rate prompts
 │       └── text2ascii.py        # Shared canvas contract for zero-shot, few-shot, procedural
-└── tests/                       # 81 comprehensive unit tests (100% offline, 0.4s)
+└── tests/                       # 84 offline tests verified after import
 ```
 
 ---
@@ -67,12 +77,12 @@ cp .env.example .env
 Paste your free API key into `.env` (e.g. `GEMINI_API_KEY=...` or `OPENROUTER_API_KEY=...`). real environment variables will also override this.
 
 ### Step 2: Verify Provider & Run Tests
-Verify your API credentials and ensure the complete test suite passes:
+Verify your API credentials and run the offline test suite:
 ```bash
 # Smoke test your provider
 python scripts/check_provider.py
 
-# Run all 81 offline tests (should take ~0.4s)
+# Run the offline tests (84 passed during the 2026-10-25 import audit)
 python -m pytest tests/ -q
 ```
 
@@ -114,8 +124,8 @@ python scripts/evaluate_clip.py --drawing data/exemplars/fish.txt --category fis
 ```
 
 ### Step 6: Review & Submit Final Report
-The complete final report is pre-written and ready in the `report/` folder:
-- **Markdown Report:** [`report/asciigent_report.md`](report/asciigent_report.md) — ready to read, share, or submit directly.
+The report drafts are in the `report/` folder and require verified experimental results before submission:
+- **Markdown Report:** [`report/asciigent_report.md`](report/asciigent_report.md) — unverified draft.
 - **LaTeX Paper (2-3 Pages):** [`report/main.tex`](report/main.tex) and [`report/references.bib`](report/references.bib) — compile with standard `pdflatex` or import into Overleaf.
 
 ---
@@ -125,4 +135,4 @@ The complete final report is pre-written and ready in the `report/` folder:
 1. **This project costs nothing.** Metered providers raise `PaidProviderRefused` unless `allow_paid=True` is explicitly passed.
 2. **Every request is cached on disk under `.cache/llm/`.** Re-running sweeps only calls missing or modified cells.
 3. **Format contract:** All drawings are strictly $24 \times 48$ matrices of printable ASCII. Any repairs made are logged in a `ParseReport`.
-4. **Scrambled controls:** Judge and CLIP scores are always compared against `scramble_cells` and `scramble_ink` to rule out text bias.
+4. **Scrambled controls:** The visual judge defaults to `scramble_cells`; add `--controls cells ink` for both controls. CLIP computes both. The ink scramble preserves silhouette, so report its gap separately when interpreting sensitivity to shape. These controls provide evidence about the metric, not proof that text bias is absent.

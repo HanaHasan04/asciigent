@@ -45,11 +45,17 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--split", default="seen", choices=["seen", "held_out", "all"])
     ap.add_argument("--samples", type=int, default=1, help="draws per category")
     ap.add_argument("--max-turns", type=int, default=4, help="maximum refinement turns")
+    ap.add_argument(
+        "--feedback", default="visual", choices=["visual", "text_only", "no_feedback"],
+        help="control arm: visual (bitmap render), text_only (character grid), or no_feedback",
+    )
     ap.add_argument("--provider", default=DEFAULT_PROVIDER, choices=sorted(PRESETS))
     ap.add_argument("--model", default=None)
     ap.add_argument("--runs-dir", default="runs")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
+    if args.samples < 1 or args.max_turns < 1:
+        ap.error("--samples and --max-turns must be positive")
 
     model = args.model or default_model(args.provider)
     cats = [args.category] if args.category else categories(args.split)
@@ -71,14 +77,17 @@ def main(argv: list[str] | None = None) -> int:
     for cat in cats:
         for s in range(args.samples):
             print(f"\nDrawing {cat} (#{s+1}/{args.samples})...")
-            run = store.create(
+            run = store.new_run(dict(
+                phase="p2",
                 category=cat,
-                arm="p2_agentic",
+                arm=f"p2_{args.feedback}",
+                feedback=args.feedback,
                 split=args.split,
                 provider=args.provider,
                 model=model,
                 sample=s,
-            )
+                max_turns=args.max_turns,
+            ))
 
             try:
                 session = run_agent_drawing_session(
@@ -87,6 +96,8 @@ def main(argv: list[str] | None = None) -> int:
                     max_turns=args.max_turns,
                     rows=rows,
                     cols=cols,
+                    sample_index=s,
+                    feedback=args.feedback,
                 )
             except Exception as e:
                 print(f"  Failed: {e}")
@@ -98,6 +109,11 @@ def main(argv: list[str] | None = None) -> int:
 
             # Save progression snapshots
             for t in session.turns:
+                run.log(
+                    "agent_turn", turn=t.turn, raw_response=t.raw_response,
+                    actions=t.actions_executed, results=t.results,
+                    finished=t.finished,
+                )
                 t_grid = t.grid_snapshot
                 png_bytes = render_to_png_bytes(t_grid)
                 (run.dir / f"turn_{t.turn}.png").write_bytes(png_bytes)
@@ -109,7 +125,6 @@ def main(argv: list[str] | None = None) -> int:
                     turns=len(session.turns),
                     total_actions=session.total_actions(),
                     stop_reason=session.stop_reason,
-                    ink_ratio=final_grid.ink_ratio(),
                     bbox=final_grid.bbox(),
                     **metrics.to_dict(),
                 )

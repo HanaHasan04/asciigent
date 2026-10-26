@@ -60,3 +60,28 @@ Next Step:
 - If adjustments are needed, issue `erase_rect` or `patch_edit` to fix them, or continue drawing the remaining features.
 - If the drawing is complete, well-proportioned, and clearly recognizable as a {category}, emit {{"action": "finish"}}.
 Provide your reasoning, followed by your action commands in ```json ... ```."""
+
+
+def agent_critique_text_prompt(category: str, ascii_text: str, turn: int, max_turns: int) -> str:
+    return f"""Here is the raw character text grid of your current drawing of a {category} (Turn {turn}/{max_turns}):
+
+```
+{ascii_text}
+```
+
+Inspect the character grid:
+1. Are the parts positioned correctly and anatomically proportionate?
+2. Are there any misaligned edges or unintended empty spaces?
+
+Next Step:
+- If adjustments are needed, issue `erase_rect` or `patch_edit` to fix them, or continue drawing the remaining features.
+- If the drawing is complete, well-proportioned, and clearly recognizable as a {category}, emit {{"action": "finish"}}.
+Provide your reasoning, followed by your action commands in ```json ... ```."""
+
+
+def agent_no_feedback_prompt(category: str, turn: int, max_turns: int) -> str:
+    return f"""Continue drawing the {category} (Turn {turn}/{max_turns}).
+
+Emit your next set of drawing actions to add features or complete the drawing.
+If you have completed all parts of the {category}, emit {{"action": "finish"}}.
+Provide your action commands in ```json ... ```."""
