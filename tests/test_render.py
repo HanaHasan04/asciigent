@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from asciigent.grid import AsciiGrid  # noqa: E402
 from asciigent.render import RenderStyle, cell_size, render, render_to_png_bytes  # noqa: E402

@@ -7,7 +7,7 @@ robustness nicety: blind retries burn the day in seconds.
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from asciigent.providers import (  # noqa: E402
     DailyQuotaExhausted,

@@ -1,138 +1,104 @@
-# ASCIIgent: Training-Free Agentic ASCII Art Generation via Active Visual Perception
+# ASCIIgent: Agentic ASCII Art Generation
 
-> **Modern Computer Vision — Final Project & CVPR Research Prototype**  
-> Hana Hasan, Amit Arad, Roei Levi, Tom Shur
+**Authors:** Hana Hasan, Amit Arad, Roei Levi, Tom Shur
 
-> **Import audit — 2026-10-25:** This is a research prototype, not a completed
-> experimental submission. P2 currently implements visual feedback only; its
-> no-feedback and text-only critique controls remain to be implemented. The
-> report contains numerical claims that cannot be verified from the supplied
-> run artifacts. Treat both report versions as unverified drafts. The ZIP did
-> not include Git history or individual drawing directories. CLIP additionally
-> requires PyTorch, the OpenAI CLIP package, and model weights; these are not
-> included in `requirements.txt`. Original imported files and the previous
-> README are preserved under `.update-backup-20261025/`.
-
-ASCIIgent investigates whether Large Language Models (LLMs) can draw with a 95-character discrete alphabet through generalizable spatial reasoning rather than memorized recall, and whether a training-free agentic loop—**draft $\to$ render $\to$ visually perceive $\to$ revise**—overcomes the fundamental *autoregressive scanline blindness* of standard models.
+ASCIIgent is a training-free framework for generating, refining, editing, and animating ASCII art ($24 \times 48$ printable character grids) using multimodal Large Language Models (VLMs). Instead of emitting an entire character grid in a single left-to-right pass—which suffers from scanline drift and lexical leakage—ASCIIgent executes a closed-loop **draft $\to$ render $\to$ perceive $\to$ revise** cycle over a discrete spatial toolset (`AsciiCanvas`).
 
 ---
 
-## 📑 Repository Structure & Component Guide
+## Repository Structure
 
-```
+```text
 asciigent/
+├── asciigent/                   # Core Python package (flat layout — no src/ wrapper)
+│   ├── actions.py               # Discrete action space & AsciiCanvas (Bresenham lines, rects, tonal ramps, patch_edit)
+│   ├── agent.py                 # Multi-turn active visual perception loop (visual, text_only, no_feedback)
+│   ├── contact_sheet.py         # Contact sheet generator
+│   ├── env.py                   # Automatic .env loader
+│   ├── grid.py                  # 24×48 AsciiGrid, 2-digit coordinate rulers, scrambling controls
+│   ├── judge.py                 # VLM Model-as-Judge with scrambled control gap
+│   ├── llm.py                   # Disk-cached, zero-budget-enforced multimodal LLM client
+│   ├── llm_types.py             # Usage tracking, LLMResponse, price tables
+│   ├── metrics.py               # Structural metrics (ink ratio, coverage, Shannon entropy, spells_name)
+│   ├── metrics_vision.py        # CLIP ViT-B/32 cosine similarity on rendered bitmaps
+│   ├── providers.py             # Provider presets (gemini, openrouter, groq, local)
+│   ├── render.py                # Deterministic cell-by-cell monospace bitmap renderer
+│   ├── store.py                 # Per-run artifact logging and JSONL index persistence
+│   ├── experiments/
+│   │   ├── p1_text2ascii.py     # P1: One-shot baseline sweep (zero-shot, few-shot, procedural CoT)
+│   │   ├── p2_agent.py          # P2: Multi-turn agentic loop & feedback mode ablation
+│   │   ├── p3_judge.py          # P3: Calibrated VLM judge with scrambled controls
+│   │   ├── p4_edit.py           # P4: Localized conversational editing via patch_edit
+│   │   ├── p5_image2ascii.py    # P5: Semantic photograph-to-ASCII abstraction
+│   │   └── p6_animate.py        # P6: Delta-patched keyframe ASCII animation
+│   └── prompts/
+│       ├── agent.py             # System, draft, and visual critique prompts
+│       ├── judge.py             # Unprompted identify and 1–5 rating prompts
+│       └── text2ascii.py        # Shared 24×48 canvas contract for P1 baselines
 ├── data/
 │   ├── categories.json          # Seen, held-out, and exemplar-only splits
 │   └── exemplars/               # Hand-crafted exemplars (fish, house, sailboat, tree)
-├── docs/
-│   ├── p1_hypotheses.md         # Pre-registered predictions and kill criteria
-│   └── cvpr_blueprint.md        # Comprehensive CVPR research proposal & blueprint
 ├── report/
-│   ├── main.tex                 # 2-3 page LaTeX paper (MCV / CVPR format)
-│   ├── asciigent_report.md      # Full markdown version of the final paper
-│   └── references.bib           # Complete BibTeX bibliography
-├── runs/                        # Run outputs (drawings, logs, contact sheets)
-│   ├── index.jsonl              # Summary index of all runs
-│   └── p1_contact_sheet.png     # Rendered visual contact sheet
+│   ├── main.tex                 # 3-page IEEE/CVPR-style LaTeX report
+│   ├── main.pdf                 # Compiled 3-page PDF report with all figures
+│   ├── references.bib           # BibTeX bibliography
+│   └── figures/                 # High-contrast figures used in the report
+├── runs/                        # Saved experimental runs, turn renders, and animations
 ├── scripts/
-│   ├── analyze_p1.py            # Summary tables (split × arm means ± SD)
-│   ├── check_provider.py        # 3-call API smoke test & quota diagnostic
-│   ├── evaluate_clip.py         # Evaluates drawings using CLIP + control gaps
-│   └── smoke_render.py          # Monospace rendering verification
-├── src/asciigent/
-│   ├── actions.py               # Discrete action space & AsciiCanvas (Bresenham, tonal ramp, patch)
-│   ├── agent.py                 # Multi-turn SketchAgent-style active perception loop
-│   ├── contact_sheet.py         # Contact sheet generator (category rows × arm columns)
-│   ├── env.py                   # Automatic .env parser
-│   ├── grid.py                  # 24×48 AsciiGrid, damage reports, scrambling controls
-│   ├── judge.py                 # VLM Model-as-judge with control gap check
-│   ├── llm.py                   # Cached, zero-budget-enforced LLM client
-│   ├── llm_types.py             # Usage tracking, LLMResponse, price tables
-│   ├── metrics.py               # Structural metrics (ink ratio, entropy, spells-name)
-│   ├── metrics_vision.py        # CLIP cosine similarity on rendered bitmaps
-│   ├── providers.py             # Provider presets (gemini, openrouter, groq, local)
-│   ├── render.py                # Deterministic cell-by-cell monospace to bitmap renderer
-│   ├── store.py                 # Per-run artifact logging and index persistence
-│   ├── experiments/
-│   │   ├── p1_text2ascii.py     # P1 sweep: seen/held-out split × 3 prompt arms
-│   │   ├── p2_agent.py          # P2 agentic sweep: multi-turn drawing with visual feedback
-│   │   └── p3_judge.py          # P3 judge sweep: model-as-judge scoring
-│   └── prompts/
-│       ├── agent.py             # Prompts for agent actions and visual critique
-│       ├── judge.py             # Separate identify and rate prompts
-│       └── text2ascii.py        # Shared canvas contract for zero-shot, few-shot, procedural
-└── tests/                       # 84 offline tests verified after import
+│   ├── analyze_p1.py            # Quantitative summary tables for P1
+│   ├── evaluate_clip.py         # CLIP ViT-B/32 evaluation with scrambled controls
+│   ├── generate_report_figures.py # Rebuilds Figures 2–5 from runs/
+│   ├── make_grid_contact_sheet.py # Rebuilds Figure 1 (12-cell P1 contact sheet)
+│   └── run_judge_text_vs_image.py # Image-vs-text VLM judge comparison
+└── tests/                       # 87 unit and integration tests
 ```
 
 ---
 
-## ⚡ Step-by-Step Instructions: From Setup to Submission
+## Quickstart & Reproducibility
 
-### Step 1: Environment Setup
-Ensure Python 3.10+ is installed with the required dependencies:
-```bash
+Because `asciigent/` is located directly at the repository root, all commands run straight from the root directory without needing `PYTHONPATH`.
+
+### 1. Install Dependencies & Run Unit Tests
+```powershell
 pip install -r requirements.txt
-cp .env.example .env
-```
-Paste your free API key into `.env` (e.g. `GEMINI_API_KEY=...` or `OPENROUTER_API_KEY=...`). real environment variables will also override this.
-
-### Step 2: Verify Provider & Run Tests
-Verify your API credentials and run the offline test suite:
-```bash
-# Smoke test your provider
-python scripts/check_provider.py
-
-# Run the offline tests (84 passed during the 2026-10-25 import audit)
 python -m pytest tests/ -q
 ```
 
-### Step 3: Run the P1 Baseline Sweep (Monolithic Prompting)
-Test monolithic zero-shot, few-shot, and procedural prompting across seen/held-out categories:
-```bash
-# Dry run to preview prompts without sending API calls:
-PYTHONPATH=src python -m asciigent.experiments.p1_text2ascii --dry-run
+### 2. Configure API Key (Optional for Cached Runs)
+All completed runs and LLM responses are cached. To run new live queries:
+```powershell
+cp .env.example .env
+# Add your free GEMINI_API_KEY or OPENROUTER_API_KEY inside .env
+```
 
-# Run seen categories (1 sample each):
-PYTHONPATH=src python -m asciigent.experiments.p1_text2ascii --split seen --samples 1
-
-# Analyze results:
+### 3. Reproduce Experiments (P1–P6)
+```powershell
+# P1: One-Shot Baselines (Zero-Shot, Few-Shot, Procedural CoT)
+python -m asciigent.experiments.p1_text2ascii --split seen --samples 1
 python scripts/analyze_p1.py runs/index.jsonl
-```
 
-### Step 4: Run the P2 Agentic Loop (Active Perception)
-Execute the multi-turn agent that plans, draws with discrete tools, renders intermediate states, and visually self-corrects:
-```bash
-# Dry run to validate configuration:
-PYTHONPATH=src python -m asciigent.experiments.p2_agent --dry-run
+# P2: Agentic Self-Perception Loop & Feedback Ablation
+python -m asciigent.experiments.p2_agent --category cat --max-turns 3 --feedback visual
+python -m asciigent.experiments.p2_agent --category cat --max-turns 3 --feedback text_only
+python -m asciigent.experiments.p2_agent --category cat --max-turns 3 --feedback no_feedback
 
-# Run an agentic session on 'cat' with up to 4 turns of visual feedback:
-PYTHONPATH=src python -m asciigent.experiments.p2_agent --category cat --max-turns 4
-```
-Each intermediate turn will be saved in `runs/<run_id>/turn_*.png` alongside the final drawing.
-
-### Step 5: Evaluate Drawings with Calibrated Metrics (P3)
-Score drawings using both VLM-as-Judge and multimodal CLIP embeddings with structure-destroying controls:
-```bash
-# 1. Run VLM Model-as-Judge over all generated drawings:
-PYTHONPATH=src python -m asciigent.experiments.p3_judge --runs-dir runs
-
-# 2. Compute CLIP visual cosine similarity and Control Gap:
+# P3: Calibrated VLM Judge & CLIP Evaluation
+python -m asciigent.experiments.p3_judge --runs-dir runs
 python scripts/evaluate_clip.py runs/index.jsonl
 
-# Or evaluate a single drawing directly:
-python scripts/evaluate_clip.py --drawing data/exemplars/fish.txt --category fish
+# P4: Localized Conversational Editing
+python -m asciigent.experiments.p4_edit --drawing runs/p4_edit/before.txt --instruction "add a pointy party hat with a star on top of the head"
+
+# P5: Semantic Image-to-ASCII
+python -m asciigent.experiments.p5_image2ascii --image runs/p5_image2ascii/input_photo.png
+
+# P6: Delta-Patched Keyframe Animation
+python -m asciigent.experiments.p6_animate --category cat --frames 3
 ```
 
-### Step 6: Review & Submit Final Report
-The report drafts are in the `report/` folder and require verified experimental results before submission:
-- **Markdown Report:** [`report/asciigent_report.md`](report/asciigent_report.md) — unverified draft.
-- **LaTeX Paper (2-3 Pages):** [`report/main.tex`](report/main.tex) and [`report/references.bib`](report/references.bib) — compile with standard `pdflatex` or import into Overleaf.
-
----
-
-## 🔒 Hard Invariants & Zero-Cost Policy
-
-1. **This project costs nothing.** Metered providers raise `PaidProviderRefused` unless `allow_paid=True` is explicitly passed.
-2. **Every request is cached on disk under `.cache/llm/`.** Re-running sweeps only calls missing or modified cells.
-3. **Format contract:** All drawings are strictly $24 \times 48$ matrices of printable ASCII. Any repairs made are logged in a `ParseReport`.
-4. **Scrambled controls:** The visual judge defaults to `scramble_cells`; add `--controls cells ink` for both controls. CLIP computes both. The ink scramble preserves silhouette, so report its gap separately when interpreting sensitivity to shape. These controls provide evidence about the metric, not proof that text bias is absent.
+### 4. Regenerate Report Figures
+```powershell
+python scripts/make_grid_contact_sheet.py
+python scripts/generate_report_figures.py
+```

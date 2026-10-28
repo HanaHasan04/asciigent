@@ -1,0 +1,23 @@
+{
+  "run_id": "20261028T074958-p2-cedeb4",
+  "elapsed_s": 18.389,
+  "phase": "p2",
+  "category": "cat",
+  "arm": "p2_visual",
+  "feedback": "visual",
+  "split": "seen",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-lite",
+  "sample": 0,
+  "max_turns": 3,
+  "turns": 3,
+  "total_actions": 3,
+  "stop_reason": "max_turns_reached",
+  "bbox": null,
+  "ink_ratio": 0.0,
+  "coverage": 0.0,
+  "char_entropy": 0.0,
+  "distinct_chars": 0,
+  "spells_name": false,
+  "degenerate": true
+}

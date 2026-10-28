@@ -1,0 +1,37 @@
+Step 1 -- plan:
+a. Parts: Head (with ears), Body, Tail, Whiskers.
+b. Extents:
+   - Head: rows 4-10, cols 15-32.
+   - Ears: rows 2-5, cols 16-19 and 28-31.
+   - Body: rows 10-18, cols 12-35.
+   - Tail: rows 15-20, cols 35-42.
+   - Whiskers: rows 7-9, cols 5-14 and 33-42.
+c. Characters:
+   - Verticals: |
+   - Horizontals: -
+   - Diagonals: / and \
+   - Fill/Features: O (eyes), v (nose), . (texture)
+
+```
+                / \       / \
+               /   \     /   \
+              |     |   |     |
+              |     |   |     |
+              |  O  |   |  O  |
+              |     v     |
+     -----   /             \   -----
+    -----   |               |   -----
+             \             /
+              \___________/
+             /             \
+            /               \
+           /                 \
+          /                   \
+         /                     \-----\
+        /                       \     \
+       |                         |     \
+       |                         |      \
+        \_______________________/        \
+                                          \
+                                           \
+```

@@ -1,0 +1,40 @@
+Step 1 -- plan:
+
+a. Parts: Head (ears, face), Body, Legs, Tail.
+b. Extents:
+   - Head: rows 3-8, cols 10-20
+   - Body: rows 8-16, cols 15-35
+   - Legs: rows 16-21, cols 16-19 and 30-33
+   - Tail: rows 10-13, cols 35-40
+c. Characters:
+   - Outlines: verticals |, horizontals -, diagonals / and \
+   - Features: eyes (o), nose (@), mouth (v)
+   - Fill: spaces inside, dot (.) for texture
+
+Step 2 -- draw:
+
+```
+                          ..............        
+          _______         .            .        
+         /       \        .            .        
+        /  /--- \ \       .            .        
+       |  |  o   | |      .            .        
+       |   \___/  |       .            .        
+        \    @   /        .            .        
+         \__ v __/        .            .        
+            | |           .            .        
+      ______| |____________________    \        
+     /                             \    \       
+    |                               |    \____  
+    |                               |         | 
+    |                               |         | 
+     \_____________________________/          / 
+         | |                 | |             /  
+         | |                 | |            /   
+         | |                 | |                
+         |_|                 |_|                
+                                                
+                                                
+                                                
+                                                
+```

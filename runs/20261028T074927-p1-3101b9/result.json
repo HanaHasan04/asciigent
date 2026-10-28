@@ -1,0 +1,30 @@
+{
+  "run_id": "20261028T074927-p1-3101b9",
+  "elapsed_s": 5.916,
+  "phase": "p1",
+  "category": "horse",
+  "split": "seen",
+  "arm": "few_shot",
+  "sample": 0,
+  "model": "gemini-3.1-flash-lite",
+  "effort": null,
+  "parse_clean": true,
+  "parse_issues": [],
+  "bbox": [
+    0,
+    0,
+    22,
+    18
+  ],
+  "digest": "420cdc3fc7d0",
+  "cached": false,
+  "cost_usd": 0.0,
+  "truncated": false,
+  "empty_response": false,
+  "ink_ratio": 0.0938,
+  "coverage": 0.3793,
+  "char_entropy": 1.9674,
+  "distinct_chars": 5,
+  "spells_name": false,
+  "degenerate": false
+}

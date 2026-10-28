@@ -1,0 +1,24 @@
+                ( )       ( )                   
+               (   )     (   )                  
+              (     ooooo     )                 
+             (   o  ooooo  o   )                
+             (      ooooo      )                
+              (     ooooo     )                 
+               (             )                  
+        ___________________________             
+       /                           \            
+      /    ooooooooooooooooooooo    \           
+     /   ooooooooooooooooooooooooo   \          
+    |   ooooooooooooooooooooooooooo   |    o    
+    |   ooooooooooooooooooooooooooo   |    o    
+    |   ooooooooooooooooooooooooooo   |         
+     \   ooooooooooooooooooooooooo   /          
+      \      |  |           |  |    /           
+       \     |  |           |  |   /            
+        \    |  |           |  |  /             
+             |  |           |  |                
+             |__|           |__|                
+                                                
+                                                
+                                                
+                                                

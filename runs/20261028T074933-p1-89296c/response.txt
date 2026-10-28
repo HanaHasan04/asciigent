@@ -1,0 +1,35 @@
+Step 1 -- plan:
+a. Parts: Head (ears, muzzle), Neck (mane), Body (back, belly, rump), Legs (four limbs), Tail.
+b. Extents:
+   Head: rows 3-7, cols 25-32.
+   Neck: rows 7-12, cols 20-27.
+   Body: rows 10-16, cols 10-25.
+   Legs: rows 16-22, cols 11-13 (front), 15-17 (front), 18-20 (back), 22-24 (back).
+   Tail: rows 12-18, cols 8-11.
+c. Characters:
+   - Verticals: |
+   - Horizontals: -
+   - Diagonals: / and \
+   - Fill: . and : and o
+
+```
+                          _________
+                         /         \
+                        /  ^   ^    \
+                       |  (o) (o)    |
+                        \     _     /
+                         \___/ \___/ 
+             __________/      \
+            /         /   _____\
+           /         /   /
+          |  _______/   /
+          | /          /
+  ____    |/          /
+ /    \___/          /
+|      ____         /
+|     /    \_______/
+ \___/  | |   | |
+        | |   | |
+        | |   | |
+        |_|   |_|
+```

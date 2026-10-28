@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 # Allow running as a plain script from the repo root
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from asciigent.grid import DEFAULT_COLS, DEFAULT_ROWS, AsciiGrid
 from asciigent.judge import Verdict, judge_image, matches, parse_rating

@@ -5,15 +5,22 @@
 __pycache__/
 *.pyc
 
-# Virtual Environment
+# Virtual Environment & IDE
 venv/
 .venv/
 env/
+.idea/
+.vscode/
 
-# Runs output (preserve index.jsonl / samples as needed, ignore local artifacts)
-runs/*/
-!runs/index.jsonl
-!runs/p1_contact_sheet.png
+# LaTeX build intermediates
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
 
 # Pytest & Coverage
 .pytest_cache/

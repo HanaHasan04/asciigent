@@ -1,0 +1,30 @@
+{
+  "run_id": "20261028T074711-p1-680a80",
+  "elapsed_s": 8.157,
+  "phase": "p1",
+  "category": "dog",
+  "split": "seen",
+  "arm": "zero_shot",
+  "sample": 0,
+  "model": "gemini-3.1-flash-lite",
+  "effort": null,
+  "parse_clean": true,
+  "parse_issues": [],
+  "bbox": [
+    3,
+    2,
+    22,
+    26
+  ],
+  "digest": "d93a5344df68",
+  "cached": false,
+  "cost_usd": 0.0,
+  "truncated": false,
+  "empty_response": false,
+  "ink_ratio": 0.0703,
+  "coverage": 0.434,
+  "char_entropy": 1.9272,
+  "distinct_chars": 6,
+  "spells_name": false,
+  "degenerate": false
+}

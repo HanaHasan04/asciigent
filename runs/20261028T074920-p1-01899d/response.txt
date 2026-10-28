@@ -1,0 +1,36 @@
+Step 1:
+a. Parts: Head (ears, face), Body (torso), Legs (front and back), Tail.
+b. Extents:
+   - Head: rows 3-8, cols 15-32
+   - Body: rows 9-18, cols 10-38
+   - Front Legs: rows 15-22, cols 12-16 and 32-36
+   - Back Legs: rows 17-22, cols 18-22 and 26-30
+   - Ears: rows 2-4, cols 16-18 and 29-31
+   - Tail: rows 14-16, cols 38-40
+c. Characters:
+   - Outlines/Curves: '(', ')', '/', '\', '_', '|'
+   - Fill/Texture: 'o', '0', 'x', '.', ' '
+
+Step 2:
+```
+                ( )       ( )               
+               (   )     (   )              
+              (     ooooo     )             
+             (   o  ooooo  o   )            
+             (      ooooo      )            
+              (     ooooo     )             
+               (             )              
+        ___________________________         
+       /                           \        
+      /    ooooooooooooooooooooo    \       
+     /   ooooooooooooooooooooooooo   \      
+    |   ooooooooooooooooooooooooooo   |    o
+    |   ooooooooooooooooooooooooooo   |    o
+    |   ooooooooooooooooooooooooooo   |     
+     \   ooooooooooooooooooooooooo   /      
+      \      |  |           |  |    /       
+       \     |  |           |  |   /        
+        \    |  |           |  |  /         
+             |  |           |  |            
+             |__|           |__|            
+```

@@ -8,7 +8,7 @@ canvas back or a report saying precisely what was wrong with it.
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from asciigent.grid import AsciiGrid, extract_art_block  # noqa: E402
 
