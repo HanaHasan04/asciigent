@@ -2,8 +2,9 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[margin=0.58in, top=0.55in, bottom=0.58in]{geometry}
+\usepackage[margin=0.54in, top=0.50in, bottom=0.52in]{geometry}
 \usepackage{mathptmx}
+\linespread{0.965}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
@@ -28,17 +29,25 @@
 \setlist[itemize]{noitemsep, topsep=2pt, leftmargin=1.3em}
 \setlist[enumerate]{noitemsep, topsep=2pt, leftmargin=1.4em}
 
-\titlespacing*{\section}{0pt}{1.4ex plus 0.4ex minus .2ex}{0.7ex plus .1ex}
-\titlespacing*{\subsection}{0pt}{1.0ex plus 0.3ex minus .1ex}{0.5ex plus .1ex}
+\titlespacing*{\section}{0pt}{1.0ex plus 0.2ex minus .1ex}{0.4ex plus .1ex}
+\titlespacing*{\subsection}{0pt}{0.7ex plus 0.2ex minus .1ex}{0.3ex plus .1ex}
 
-\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
-\setlength{\floatsep}{5pt plus 2pt minus 2pt}
-\setlength{\intextsep}{5pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{4pt plus 1pt minus 1pt}
+\setlength{\floatsep}{4pt plus 1pt minus 1pt}
+\setlength{\intextsep}{4pt plus 1pt minus 1pt}
 
-\title{\vspace{-1.4em}\Large\textbf{ASCIIgent: Agentic ASCII Art Generation}\vspace{-0.4em}}
+\let\oldthebibliography\thebibliography
+\renewcommand{\thebibliography}[1]{%
+  \oldthebibliography{#1}%
+  \setlength{\itemsep}{0pt}%
+  \setlength{\parskip}{0pt}%
+}
+
+\title{\vspace{-1.5em}\Large\textbf{ASCIIgent: Agentic ASCII Art Generation}\vspace{-0.4em}}
 
 \author{
-  \normalsize Hana Hasan \qquad Amit Arad \qquad Roei Levi \qquad Tom Shur
+  \normalsize Hana Hasan \qquad Amit Arad \qquad Roei Levi \qquad Tom Shur \\[0.2em]
+  \small\href{https://github.com/HanaHasan04/asciigent}{\texttt{https://github.com/HanaHasan04/asciigent}}
 }
 \date{\vspace{-1.6em}}
 
@@ -48,7 +57,7 @@
 
 \begin{abstract}
 \noindent
-Visual abstraction is the process of discarding redundant low-level visual data---textures, photometrics, and uninformative pixel noise---and re-encoding semantic structures into a reduced, symbolic visual language. While recent advances in neural sketch synthesis like SketchAgent demonstrate that vision-language models (VLMs) can synthesize continuous vector strokes, we investigate whether this spatial capacity extends to a fundamentally more constrained and discrete medium: \textbf{ASCII art}. In ASCII art, a model must convey recognizable silhouettes using printable characters on a fixed-size monospace character grid. Characters here serve a dual role: simultaneously functioning as language tokens and spatial micro-primitives. This dichotomy introduces a core question: do autoregressive models draw through spatial reasoning or pure textual memorization, and does active visual perception enable meaningful self-correction? We introduce \textbf{ASCIIgent}, a training-free framework evaluating monolithic prompting baselines, agentic discrete tool-use loops, and multimodal visual feedback across Gemini family models (\texttt{gemini-3-flash-preview} and \texttt{gemini-3.1-flash-lite}). Evaluating against structure-destroying scrambled controls to mitigate the text-reading bias of VLM judges, we reveal characteristic failure modes of monolithic generation (scanline drift, lexical leakage) and show that iterative visual feedback enables grounded spatial refinement, localized editing, and frame-consistent animation.
+Visual abstraction is the process of discarding redundant low-level visual data---textures, photometrics, and uninformative pixel noise---and re-encoding semantic structures into a reduced, symbolic visual language. While recent advances in neural sketch synthesis like SketchAgent demonstrate that vision-language models (VLMs) can synthesize continuous vector strokes, we investigate whether this spatial capacity extends to a fundamentally more constrained and discrete medium: \textbf{ASCII art}. In ASCII art, a model must convey recognizable silhouettes using printable characters on a fixed-size monospace character grid. Characters here serve a dual role: simultaneously functioning as language tokens and spatial micro-primitives. This dichotomy introduces a core question: do autoregressive models draw through spatial reasoning or pure textual memorization, and does active visual perception enable meaningful self-correction? We introduce \textbf{ASCIIgent}, a training-free framework evaluating monolithic prompting baselines, agentic discrete tool-use loops, and multimodal visual feedback across Gemini family models (\texttt{gemini-3-flash-preview} and \texttt{gemini-3.1-flash-lite}). Evaluating against structure-destroying scrambled controls to mitigate the text-reading bias of VLM judges, we reveal characteristic failure modes of monolithic generation (scanline drift, glyph collapse, and plan-truncation leakage) and show that iterative visual feedback enables grounded spatial refinement, localized editing, and frame-consistent animation.
 \end{abstract}
 
 % =========================================================
@@ -73,9 +82,9 @@ We define the drawing canvas as a fixed character matrix $C \in \Sigma^{H \times
 
 \begin{figure*}[!t]
   \centering
-  \includegraphics[width=0.90\linewidth, height=4.5cm, keepaspectratio]{figures/p1_contact_sheet.png}
-  \vspace{-3pt}
-  \caption{\textbf{P1 One-Shot Baseline Contact Sheet (12 Cells, Model: \texttt{gemini-3-flash-preview}).} Columns show the four target categories (\texttt{cat}, \texttt{dog}, \texttt{bear}, \texttt{horse}); rows show the three prompting arms. Zero-shot produces recognizable silhouettes but occasionally drifts across the 48-column right boundary (e.g., \texttt{horse}); few-shot regularizes scale and centering; procedural CoT (with bounded thinking effort) yields rich anatomical structure such as paws, manes, and hooves.}
+  \includegraphics[width=0.88\linewidth, height=3.75cm, keepaspectratio]{figures/p1_contact_sheet.png}
+  \vspace{-4pt}
+  \caption{\textbf{P1 One-Shot Baseline Contact Sheet (12 Cells, Model: \texttt{gemini-3-flash-preview}).} Columns show the four target categories (\texttt{cat}, \texttt{dog}, \texttt{bear}, \texttt{horse}); rows show the three prompting arms. Zero-shot produces recognizable silhouettes but occasionally drifts across the 48-column right boundary (e.g., \texttt{horse}); few-shot regularizes scale and centering; procedural CoT (with bounded thinking effort \texttt{--effort low}) yields rich anatomical structure such as paws, manes, and hooves.}
   \label{fig:contact_sheet}
 \end{figure*}
 
@@ -102,9 +111,9 @@ A 3-turn budget mirrors a coarse-to-fine artistic workflow while bounding API la
 \subsection{Evaluation Protocol (P3)}
 Our evaluation combines three complementary pillars:
 \begin{enumerate}
-  \item \textbf{Structural Metrics:} Ink ratio $\rho$ (non-blank fraction), bounding-box coverage, Shannon character entropy $H = -\sum p_i \log_2 p_i$, distinct glyph count, and automated defect flags (\texttt{spells\_name} for lexical leakage and \texttt{degenerate}).
-  \item \textbf{VLM Image-vs-Text Judge:} Dual independent queries to a frozen multimodal judge (\texttt{gemini-3.1-flash-lite}): unprompted open identification (``What does this picture depict?'') followed by a 1--5 visual quality rating.
-  \item \textbf{Scrambled Controls \& Control Gap:} Every drawing is compared against \emph{scramble-cells} (uniform permutation over the $24 \times 48$ grid) and \emph{scramble-ink} (permutation of non-blank glyphs within the silhouette mask). The \textbf{Control Gap} $\Delta = S_{\text{real}} - \max(S_{\text{cells}}, S_{\text{ink}})$ confirms genuine geometric recognizability when $\Delta > 0$.
+  \item \textbf{Structural Metrics:} Ink ratio $\rho$ (non-blank fraction), bounding-box coverage, Shannon character entropy $H = -\sum p_i \log_2 p_i$ ($\uparrow$), distinct glyph count ($\uparrow$), and automated defect flags: \texttt{spells\_name} ($\downarrow$) for lexical leakage and \texttt{degenerate} ($\downarrow$). Note that $\rho$ and coverage are structural descriptors without monotonic arrows because both extremes ($0$ blank vs. $1$ solid block fill) are degenerate.
+  \item \textbf{VLM Image-vs-Text Judge:} Dual independent queries to a frozen multimodal judge (\texttt{gemini-3.1-flash-lite}): unprompted open identification (``What does this picture depict?'') followed by a 1--5 visual quality rating ($\uparrow$).
+  \item \textbf{Scrambled Controls \& Control Gap ($\uparrow$):} Every drawing is compared against \emph{scramble-cells} (uniform permutation over the $24 \times 48$ grid) and \emph{scramble-ink} (permutation of non-blank glyphs within the silhouette mask). The \textbf{Control Gap} $\Delta = S_{\text{real}} - \max(S_{\text{cells}}, S_{\text{ink}})$ confirms genuine geometric recognizability when $\Delta > 0$.
 \end{enumerate}
 
 % =========================================================
@@ -112,89 +121,98 @@ Our evaluation combines three complementary pillars:
 % =========================================================
 
 \subsection{P1 Baselines and Multi-Model Comparison}
-Table~\ref{tab:p1} reports the per-cell structural metrics for \texttt{gemini-3-flash-preview} (visualized in Figure~\ref{fig:contact_sheet}) alongside the multi-model comparison against \texttt{gemini-3.1-flash-lite}. Two key findings emerge:
+Table~\ref{tab:p1} reports the complete per-cell metrics across all 12 cells for both \texttt{gemini-3-flash-preview} (Figure~\ref{fig:contact_sheet}) and \texttt{gemini-3.1-flash-lite}, alongside the unbounded-reasoning ablation. Two key findings emerge:
 \begin{itemize}
-  \item \textbf{Model Capacity vs. Glyph Collapse and Lexical Leakage.} On the lightweight \texttt{gemini-3.1-flash-lite} model, zero-shot generation suffers from glyph collapse (e.g., \texttt{horse} collapses to 2 distinct characters, $H=0.71$; \texttt{bear} fills a block of vertical bars), and procedural \texttt{horse} cheats by spelling ``HORSE'' inside the torso (\texttt{spells\_name} = Yes, $\Delta = 0.000$). In contrast, \texttt{gemini-3-flash-preview} synthesizes recognizable animal silhouettes across all 12 cells with high character diversity ($H = 1.76$--$2.83$ bits) and zero lexical leakage.
-  \item \textbf{Reasoning Effort vs. CoT Truncation.} Because \texttt{gemini-3-flash-preview} is a thinking model that bills internal reasoning tokens against \texttt{max\_tokens}, running the verbose \texttt{procedural} arm with unbounded reasoning caused 3/4 cells to truncate mid-plan. Bounding reasoning depth (\texttt{--effort low}) eliminated truncation completely, producing the detailed procedural drawings in Figure~\ref{fig:contact_sheet} (bottom row).
+  \item \textbf{Model Capacity vs. Glyph Collapse.} On the lightweight \texttt{gemini-3.1-flash-lite} model, zero-shot generation suffers from severe glyph collapse: \texttt{bear} zero-shot collapses into just 3 distinct characters (\texttt{|}, \texttt{:}, \texttt{.}) with entropy $H = 0.36$ bits and $\rho = 0.458$ (filling nearly half the canvas with solid vertical bars), while \texttt{cat} zero-shot uses only 4 distinct characters ($H = 1.74$ bits). In contrast, \texttt{gemini-3-flash-preview} synthesizes recognizable animal silhouettes across all 12 cells ($H = 2.33 \pm 0.32$ vs. $1.97 \pm 0.57$ bits; $8.33$ vs. $7.33$ distinct chars).
+  \item \textbf{Reasoning Effort vs. CoT Truncation and Plan Leakage.} Because \texttt{gemini-3-flash-preview} bills internal thinking tokens against \texttt{max\_tokens}, running the verbose \texttt{procedural} arm with unbounded reasoning (\texttt{effort=None}) caused \textbf{4/4 cells} to truncate: \texttt{cat} truncated after 2 lines (\texttt{degenerate=True}, $\rho=0.005$), while \texttt{dog}, \texttt{bear}, and \texttt{horse} truncated mid-plan before opening a code fence (\texttt{no\_code\_fence}), leaking prose such as \emph{``Step 1 -- plan: a. The horse will be drawn...''} onto the canvas and triggering \texttt{spells\_name=True} on \textbf{3/4 cells} (bottom row of Table~\ref{tab:p1}). Bounding reasoning depth (\texttt{--effort low}) eliminated truncation across all 4/4 procedural cells ($0/12$ \texttt{spells\_name}).
 \end{itemize}
 
 \begin{table}[!t]
 \centering
 \scriptsize
-\setlength{\tabcolsep}{2.4pt}
-\begin{tabular}{@{}llccccc@{}}
+\renewcommand{\arraystretch}{0.91}
+\setlength{\tabcolsep}{1.6pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}ll ccccc c ccccc@{}}
 \toprule
-\textbf{Category} & \textbf{Arm} & $\rho$ (Ink) & Cov. & $H$ (bits) & Chars & Spells? \\
+& & \multicolumn{5}{c}{\textbf{\texttt{gemini-3-flash-preview}}} & & \multicolumn{5}{c}{\textbf{\texttt{gemini-3.1-flash-lite}}} \\
+\cmidrule{3-7} \cmidrule{9-13}
+\textbf{Cat.} & \textbf{Arm} & $\rho$ & Cov. & $H{\uparrow}$ & Ch${\uparrow}$ & Sp${\downarrow}$ & & $\rho$ & Cov. & $H{\uparrow}$ & Ch${\uparrow}$ & Sp${\downarrow}$ \\
 \midrule
-\multicolumn{7}{@{}l}{\textit{Per-Cell Results: \texttt{gemini-3-flash-preview} (Figure~\ref{fig:contact_sheet})}} \\
-Cat   & zero-shot   & 0.158 & 0.78 & 2.28 & 8  & No \\
-Cat   & few-shot    & 0.055 & 0.24 & 2.83 & 11 & No \\
-Cat   & procedural  & 0.138 & 0.80 & 2.52 & 10 & No \\
-Dog   & zero-shot   & 0.102 & 0.33 & 2.31 & 7  & No \\
-Dog   & few-shot    & 0.058 & 0.20 & 2.58 & 8  & No \\
-Dog   & procedural  & 0.143 & 0.68 & 2.15 & 9  & No \\
-Bear  & zero-shot   & 0.113 & 0.46 & 2.56 & 10 & No \\
-Bear  & few-shot    & 0.082 & 0.39 & 2.73 & 10 & No \\
-Bear  & procedural  & 0.128 & 0.69 & 2.13 & 7  & No \\
-Horse & zero-shot   & 0.098 & 0.61 & 1.92 & 7  & No \\
-Horse & few-shot    & 0.152 & 0.67 & 1.76 & 5  & No \\
-Horse & procedural  & 0.158 & 0.76 & 2.21 & 8  & No \\
+Cat   & zero-shot  & .158 & .78 & 2.28 &  8 & No & & .161 & .78 & 1.74 &  4 & No \\
+Cat   & few-shot   & .055 & .24 & 2.83 & 11 & No & & .094 & .69 & 2.30 &  8 & No \\
+Cat   & procedural & .138 & .80 & 2.52 & 10 & No & & .102 & .73 & 2.40 &  7 & No \\
+Dog   & zero-shot  & .102 & .33 & 2.31 &  7 & No & & .070 & .43 & 1.93 &  6 & No \\
+Dog   & few-shot   & .058 & .20 & 2.58 &  8 & No & & .082 & .43 & 2.42 &  8 & No \\
+Dog   & procedural & .143 & .68 & 2.15 &  9 & No & & .145 & .71 & 2.18 &  9 & No \\
+Bear  & zero-shot  & .113 & .46 & 2.56 & 10 & No & & .458 & .71 & 0.36 &  3 & No \\
+Bear  & few-shot   & .082 & .39 & 2.73 & 10 & No & & .148 & .71 & 2.54 & 11 & No \\
+Bear  & procedural & .128 & .69 & 2.13 &  7 & No & & .230 & .69 & 1.69 &  7 & No \\
+Horse & zero-shot  & .098 & .61 & 1.92 &  7 & No & & .194 & .58 & 1.97 & 12 & No \\
+Horse & few-shot   & .152 & .67 & 1.76 &  5 & No & & .094 & .38 & 1.97 &  5 & No \\
+Horse & procedural & .158 & .76 & 2.21 &  8 & No & & .109 & .63 & 2.08 &  8 & No \\
 \midrule
-\multicolumn{7}{@{}l}{\textit{Multi-Model Summary Across All 12 Seen Cells (Mean $\pm$ SD)}} \\
-\multicolumn{2}{@{}l}{\texttt{gemini-3-flash-preview}} & $.115 \pm .036$ & $.55 \pm .22$ & $\mathbf{2.33 \pm .32}$ & $\mathbf{8.3 \pm 1.7}$ & \textbf{0/12} \\
-\multicolumn{2}{@{}l}{\texttt{gemini-3.1-flash-lite}}  & $.100 \pm .038$ & $.48 \pm .13$ & $1.86 \pm .63$ & $7.0 \pm 2.9$ & 1/12 \\
+\multicolumn{2}{@{}l}{\textbf{Mean} ($n{=}12$)} & .115 & .55 & \textbf{2.33} & \textbf{8.33} & \textbf{0/12} & & .157 & .62 & 1.97 & 7.33 & \textbf{0/12} \\
+\multicolumn{2}{@{}l}{\textbf{$\pm$ SD} ($n{=}12$)} & $\pm$.037 & $\pm$.22 & $\pm$.32 & $\pm$1.72 & --- & & $\pm$.106 & $\pm$.14 & $\pm$.57 & $\pm$2.64 & --- \\
+\midrule
+\multicolumn{13}{@{}l}{\textit{Unbounded Thinking: \texttt{gemini-3-flash-preview} procedural (\texttt{effort=None}, $n{=}4$):}} \\
+\multicolumn{13}{@{}l}{4/4 truncated; $\rho{=}.331{\pm}.225$, Cov.${=}.63{\pm}.41$, $H{=}4.05{\pm}1.73$, Ch${=}38.5{\pm}23.9$, Sp${\downarrow}{=}\mathbf{3/4}$} \\
 \bottomrule
-\end{tabular}
-\caption{\textbf{P1 Structural Metrics and Multi-Model Comparison.} \texttt{gemini-3-flash-preview} achieves higher character entropy and zero lexical leakage across all 12 cells compared to \texttt{gemini-3.1-flash-lite}.}
+\end{tabular}%
+}
+\caption{\textbf{Complete P1 Structural Metrics Across Both Gemini Models ($24$ Clean Cells + $4$ Truncated Ablation Calls).} Arrows indicate directionality ($H{\uparrow}$: Shannon entropy in bits, $\text{Ch}{\uparrow}$: distinct chars, $\text{Sp}{\downarrow}$: \texttt{spells\_name} lexical leakage); $\rho$ and Cov. are structural range descriptors.}
 \label{tab:p1}
 \end{table}
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=\linewidth]{figures/fig2_agentic_turns.png}
+  \includegraphics[width=0.94\linewidth]{figures/fig2_agentic_turns.png}
+  \vspace{-2pt}
   \caption{\textbf{P2 Agentic Self-Perception Progression (Target: \texttt{cat}, Model: \texttt{gemini-3.1-flash-lite}).} Turn 1 drafts the head and torso silhouette. Inspecting the rendered PNG in Turn 2 guides localized \texttt{patch\_edit} calls for symmetric whiskers and seated front paws. Turn 3 adds a bell collar and curled tail.}
   \label{fig:agentic_turns}
 \end{figure}
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=\linewidth]{figures/fig3_feedback_ablation.png}
+  \includegraphics[width=0.94\linewidth]{figures/fig3_feedback_ablation.png}
+  \vspace{-2pt}
   \caption{\textbf{P2 Feedback Mode Ablation on \texttt{cat}.} Left: \texttt{no\_feedback} (blind) overwrites the nose and places floating disconnected feet/tail. Center: \texttt{text\_only} critique misaligns row offsets, superimposing a second face over the first. Right: \texttt{visual} perception (ours) grounds every edit accurately.}
   \label{fig:ablation}
 \end{figure}
 
 \subsection{P2: Agentic Synthesis and Feedback Ablation}
-Figure~\ref{fig:agentic_turns} illustrates the 3-turn agentic progression on \texttt{cat} using \texttt{gemini-3.1-flash-lite}. Even on the lightweight model, decomposing generation into $\text{draft} \to \text{render} \to \text{perceive} \to \text{revise}$ yields a clean, high-entropy drawing ($H = 3.17$ bits, 12 distinct chars). As shown in the Figure~\ref{fig:ablation} ablation, removing the rendered PNG causes severe spatial degradation: \texttt{no\_feedback} hallucinates disconnected limbs to the right of the body, while \texttt{text\_only} miscalculates row indices and stamps a duplicate face over the chest. Pairing the rendered PNG with the 2-digit coordinate ruler in \texttt{visual} mode eliminates both failure modes.
+Figure~\ref{fig:agentic_turns} illustrates the 3-turn agentic progression on \texttt{cat} using \texttt{gemini-3.1-flash-lite}. Even on the lightweight model, decomposing generation into $\text{draft} \to \text{render} \to \text{perceive} \to \text{revise}$ yields a clean, high-entropy drawing ($H = 3.14$ bits, 13 distinct chars, $\rho = 0.056$, coverage $= 0.165$). As shown in the Figure~\ref{fig:ablation} ablation, removing the rendered PNG causes severe spatial degradation: \texttt{no\_feedback} ($\rho = 0.058, H = 2.89$) hallucinates disconnected limbs to the right of the body, while \texttt{text\_only} ($\rho = 0.065, H = 2.92$) miscalculates row indices and stamps a duplicate face over the chest. Pairing the rendered PNG with the 2-digit coordinate ruler in \texttt{visual} mode eliminates both failure modes.
 
 \subsection{P3: CLIP Evaluation and Judge Calibration}
-Evaluating rendered drawings with local CLIP ViT-B/32 against text prompts (\texttt{"an ASCII art drawing of a \{category\}"}) confirms positive control gaps: \texttt{cat} achieves CLIP cosine similarity $0.2947$ vs. $0.2880$ scrambled ($\Delta = +0.0067$), and \texttt{bear} achieves $0.3044$ vs. $0.2752$ ($\Delta = +0.0293$). In our dual image-vs-text VLM judge test (\texttt{run\_judge\_text\_vs\_image.py}), the rendered PNG of the P2 \texttt{cat} is correctly identified as \texttt{"cat"} and rated $5/5$, whereas its scrambled control drops to $1/5$ ($\Delta_{\text{judge}} = +4.0$).
+Evaluating rendered drawings with local CLIP ViT-B/32 against text prompts (\texttt{"an ASCII art drawing of a \{category\}"}) confirms positive control gaps ($\Delta{\uparrow}$): the P2 \texttt{cat} achieves $S_{\text{real}} = 0.3251$ vs. $0.2737$ (\emph{scramble-cells}) and $0.2758$ (\emph{scramble-ink}), yielding $\Delta = +0.0493$; the P5 \texttt{bear} achieves $S_{\text{real}} = 0.2981$ vs. $0.2707$ scrambled ($\Delta = +0.0274$); and P1 procedural \texttt{horse} (\texttt{effort=low}) achieves $0.3213$ vs. $0.3088$ ($\Delta = +0.0124$). Crucially, on the truncated \texttt{effort=None} procedural \texttt{horse} where leaked plan prose spelled \texttt{"horse"} (\texttt{spells\_name=True}), CLIP yields $S_{\text{real}} = 0.1893$ vs. $0.2451$ scrambled ($\Delta = -0.0558 < 0$), proving that $\Delta$ penalizes text leakage. In our dual VLM judge test (\texttt{run\_judge\_text\_vs\_image.py}), the rendered P2 \texttt{cat} bitmap is identified as \texttt{"cat"} and rated $5/5$ vs. $1/5$ scrambled ($\Delta_{\text{judge}} = +4.0$).
 
 \subsection{Unified Downstream Extensions (P4, P5, P6)}
 To ensure strict experimental continuity, both our conversational editing (P4) and keyframe animation (P6) experiments take the \textbf{exact Turn 3 \texttt{cat} canvas synthesized by our P2 agentic loop} (Figure~\ref{fig:agentic_turns}, right) as their starting base drawing:
 \begin{itemize}
-  \item \textbf{P4: Conversational Editing (Figure~\ref{fig:extensions}a).} Given the P2 \texttt{cat} canvas and the instruction \emph{``Add a pointy party hat with a star on top of the head''}, the agent inspects the rendered image and 2-digit ruler and issues a single \texttt{patch\_edit} at rows 0--2, columns 18--22 (modifying only 8 cells directly above the ears \texttt{/\_/\textbackslash} at row 3 while leaving rows 3--23 completely untouched).
-  \item \textbf{P5: Semantic Image-to-ASCII (Figure~\ref{fig:extensions}b).} Given a $320 \times 320$ shaded RGB illustration of a seated \texttt{bear} on a sky-and-foliage background (\texttt{runs/p5\_image2ascii/input\_photo.png}), the VLM suppresses background clutter and photometric gradients to extract a clean $24 \times 48$ structural contour ($\rho = 0.120$).
+  \item \textbf{P4: Conversational Editing (Figure~\ref{fig:extensions}a).} Given the P2 \texttt{cat} canvas and the instruction \emph{``Add a pointy party hat with a star on top of the head''}, the agent inspects the rendered image and 2-digit ruler and issues a single \texttt{patch\_edit} at rows 0--2, columns 18--22 (modifying only 8 cells directly above the ears \texttt{/\_/\textbackslash} at row 3 while leaving rows 3--23 completely untouched; $\rho: 0.056 \to 0.0625$, 14 distinct chars).
+  \item \textbf{P5: Semantic Image-to-ASCII (Figure~\ref{fig:extensions}b).} Given a $320 \times 320$ shaded RGB illustration of a seated \texttt{bear} on a sky-and-foliage background (\texttt{runs/p5\_image2ascii/input\_photo.png}), the VLM suppresses background clutter and photometric gradients to extract a clean $24 \times 48$ structural contour ($\rho = 0.125$, coverage $= 0.391$, $H = 3.04$ bits, 11 distinct chars).
   \item \textbf{P6: Delta-Patched Keyframe Animation (Figure~\ref{fig:extensions}c).} Regenerating a full $24 \times 48$ grid per frame causes body drift and limb mutation. Instead, \texttt{p6\_animate.py} initializes each frame $t$ from $\text{AsciiCanvas}(\text{base}=\text{frame}_{t-1})$ and applies only localized \texttt{patch\_edit} deltas. Starting from the P2 \texttt{cat}, the head, whiskers, collar, torso, and paws remain 100\% invariant across frames while the eyes blink (\texttt{o.o} $\to$ \texttt{-.-} $\to$ \texttt{\textasciicircum.\textasciicircum}) and the tail wags.
 \end{itemize}
 
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}{0.56\linewidth}
+  \begin{subfigure}{0.54\linewidth}
     \centering
     \includegraphics[width=\linewidth]{figures/fig4_conversational_edit.png}
     \caption{\textbf{P4 Edit:} +Party hat on P2 \texttt{cat}.}
   \end{subfigure}\hfill
-  \begin{subfigure}{0.41\linewidth}
+  \begin{subfigure}{0.40\linewidth}
     \centering
     \includegraphics[width=\linewidth]{figures/fig6_image2ascii.png}
     \caption{\textbf{P5 Photo $\to$ ASCII} (\texttt{bear}).}
   \end{subfigure}
-  \vspace{2pt}
-  \begin{subfigure}{\linewidth}
+  \vspace{1pt}
+  \begin{subfigure}{0.95\linewidth}
     \centering
     \includegraphics[width=\linewidth]{figures/fig5_animation_strip.png}
     \caption{\textbf{P6 Delta-Patched Animation:} Blinking eyes and wagging tail on the P2 \texttt{cat} with 100\% invariant body and limbs.}
   \end{subfigure}
+  \vspace{-2pt}
   \caption{\textbf{Downstream Extensions (P4, P5, P6).} P4 and P6 operate directly on the P2 Turn 3 \texttt{cat} canvas; P5 converts an RGB image of a \texttt{bear} into semantic ASCII contours.}
   \label{fig:extensions}
 \end{figure}
@@ -210,9 +228,9 @@ Whereas SketchAgent~\cite{vinker2025sketchagent} emits continuous parametric B\'
 Free-tier API rate limits constrain sample counts per cell, and VLM coordinate grounding still benefits from explicit 2-digit row/column rulers alongside rendered bitmaps. Future work includes expanding evaluations across additional open-weights and proprietary VLMs, calibrating the scrambled control gap $\Delta$ against human perceptual studies, and incorporating tree search over candidate discrete edits.
 
 \textbf{Conclusion.}
-ASCIIgent demonstrates that while monolithic autoregressive generation is vulnerable to scanline drift, glyph collapse, and lexical leakage, coupling a discrete spatial action vocabulary with active visual perception enables self-correcting ASCII synthesis, surgical conversational editing, semantic image-to-ASCII abstraction, and coherent keyframe animation.
+ASCIIgent demonstrates that while monolithic autoregressive generation is vulnerable to scanline drift, glyph collapse, and plan-truncation leakage, coupling a discrete spatial action vocabulary with active visual perception enables self-correcting ASCII synthesis, surgical conversational editing, semantic image-to-ASCII abstraction, and coherent keyframe animation.
 
-{\footnotesize
+{\scriptsize
 \bibliographystyle{ieeetr}
 \bibliography{references}
 }

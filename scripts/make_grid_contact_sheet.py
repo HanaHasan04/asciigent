@@ -1,7 +1,10 @@
-"""Generate a clean, publication-ready 4x3 contact sheet for P1 baseline.
+"""Generate clean, publication-ready 4x3 contact sheets for P1 baselines.
 
 Columns: Cat, Dog, Bear, Horse
 Rows: Zero-Shot, Few-Shot, Procedural
+Generates:
+- runs/p1_contact_sheet.png & report/figures/p1_contact_sheet.png (gemini-3-flash-preview)
+- runs/p1_contact_sheet_flash_lite.png (gemini-3.1-flash-lite)
 """
 
 from pathlib import Path
@@ -9,15 +12,15 @@ import json
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 
-def build_p1_grid():
-    root = Path(__file__).resolve().parents[1]
-    runs_dir = root / "runs"
-    runs_index = runs_dir / "index.jsonl"
-    entries = [json.loads(line) for line in runs_index.read_text(encoding="utf-8").splitlines() if line.strip()]
-
+def build_sheet_for_model(entries: list[dict], runs_dir: Path, model_name: str, out_paths: list[Path]):
     p1_runs = {}
     for e in entries:
-        if e.get("model") == "gemini-3-flash-preview" and not e.get("truncated") and e.get("arm") in ("zero_shot", "few_shot", "procedural"):
+        if (
+            e.get("phase") == "p1"
+            and e.get("model") == model_name
+            and not e.get("truncated")
+            and e.get("arm") in ("zero_shot", "few_shot", "procedural")
+        ):
             p1_runs[(e["category"], e["arm"])] = runs_dir / e["run_id"]
 
     categories = ["cat", "dog", "bear", "horse"]
@@ -33,7 +36,7 @@ def build_p1_grid():
                 im = Image.open(rd / "drawing.png").convert("RGB")
                 images[(c, a)] = im
             else:
-                raise RuntimeError(f"Missing drawing for ({c}, {a})")
+                raise RuntimeError(f"Missing drawing for {model_name} ({c}, {a})")
 
     scale = 0.75
     sample_img = next(iter(images.values()))
@@ -76,7 +79,6 @@ def build_p1_grid():
             col_x = margin + row_header_left + j * (cell_w + gap)
             img = images[(cat_key, arm_key)]
             scaled_img = img.resize((cell_w, cell_h), Image.Resampling.LANCZOS)
-            # Boost contrast so downsampled monospace strokes stay dark and crisp
             scaled_img = ImageEnhance.Contrast(scaled_img).enhance(2.2)
             canvas.paste(scaled_img, (col_x, row_y))
             draw.rectangle(
@@ -85,11 +87,29 @@ def build_p1_grid():
                 width=1,
             )
 
-    runs_out = runs_dir / "p1_contact_sheet.png"
-    canvas.save(runs_out, dpi=(300, 300))
-    report_out = root / "report" / "figures" / "p1_contact_sheet.png"
-    canvas.save(report_out, dpi=(300, 300))
-    print(f"Saved 12-cell sheet ({total_w}x{total_h}, aspect={total_w/total_h:.2f})")
+    for p in out_paths:
+        canvas.save(p, dpi=(300, 300))
+    print(f"Saved 12-cell sheet for {model_name} ({total_w}x{total_h})")
+
+
+def build_p1_grid():
+    root = Path(__file__).resolve().parents[1]
+    runs_dir = root / "runs"
+    runs_index = runs_dir / "index.jsonl"
+    entries = [json.loads(line) for line in runs_index.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+    build_sheet_for_model(
+        entries,
+        runs_dir,
+        "gemini-3-flash-preview",
+        [runs_dir / "p1_contact_sheet.png", root / "report" / "figures" / "p1_contact_sheet.png"],
+    )
+    build_sheet_for_model(
+        entries,
+        runs_dir,
+        "gemini-3.1-flash-lite",
+        [runs_dir / "p1_contact_sheet_flash_lite.png"],
+    )
 
 
 if __name__ == "__main__":

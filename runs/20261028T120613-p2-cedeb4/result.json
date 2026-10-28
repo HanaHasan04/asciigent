@@ -14,15 +14,15 @@
   "total_actions": 8,
   "stop_reason": "max_turns_reached",
   "bbox": [
-    4,
-    11,
+    3,
     13,
-    32
+    12,
+    31
   ],
-  "ink_ratio": 0.0347,
-  "coverage": 0.191,
-  "char_entropy": 3.1727,
-  "distinct_chars": 12,
+  "ink_ratio": 0.0556,
+  "coverage": 0.1649,
+  "char_entropy": 3.1399,
+  "distinct_chars": 13,
   "spells_name": false,
   "degenerate": false
 }

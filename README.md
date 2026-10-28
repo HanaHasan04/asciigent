@@ -92,17 +92,56 @@ To ensure strict experimental continuity, both **P4 (Conversational Editing)** a
 ### 3. P1: One-Shot Baselines & Multi-Model Gemini Comparison
 
 We evaluate three one-shot prompting strategies (**Zero-Shot**, **Few-Shot** with 4 disjoint exemplars `fish`/`house`/`tree`/`sailboat`, and **Procedural Chain-of-Thought**) across four seen categories (`cat`, `dog`, `bear`, `horse`) on **two Gemini family models**:
-1. **`gemini-3-flash-preview`** (Reasoning-enabled multimodal Flash model — shown in the 12-cell contact sheet below)
-2. **`gemini-3.1-flash-lite`** (Lightweight fast baseline model)
+1. **`gemini-3-flash-preview` (`effort=low`)** — Reasoning-enabled multimodal Flash model
+2. **`gemini-3.1-flash-lite`** — Lightweight fast baseline model
+
+#### Complete 24-Cell Quantitative Comparison (`python scripts/analyze_p1.py runs/index.jsonl`)
+
+Arrows indicate directional preference where monotonic: higher Shannon entropy ($H{\uparrow}$) and distinct character count ($\text{Ch}{\uparrow}$) prevent glyph collapse, and lower lexical leakage ($\text{Sp}{\downarrow}$) indicates absence of spelled category names. Ink ratio ($\rho$) and bounding-box coverage ($\text{Cov.}$) have no monotonic arrow because both near-empty grids ($\rho < 0.01$) and solid character blocks ($\rho > 0.40$) are degenerate; recognizable line drawings occupy an intermediate band ($\rho \in [0.06, 0.25]$).
+
+| Category | Arm | `gemini-3-flash-preview`<br>$\rho$ / $\text{Cov.}$ / $H{\uparrow}$ / $\text{Ch}{\uparrow}$ / $\text{Sp}{\downarrow}$ | `gemini-3.1-flash-lite`<br>$\rho$ / $\text{Cov.}$ / $H{\uparrow}$ / $\text{Ch}{\uparrow}$ / $\text{Sp}{\downarrow}$ |
+| :--- | :--- | :---: | :---: |
+| **Cat** | `zero_shot` | `.158` / `.78` / `2.28` / `8` / No | `.161` / `.78` / `1.74` / `4` / No |
+| **Cat** | `few_shot` | `.055` / `.24` / `2.83` / `11` / No | `.094` / `.69` / `2.30` / `8` / No |
+| **Cat** | `procedural` | `.138` / `.80` / `2.52` / `10` / No | `.102` / `.73` / `2.40` / `7` / No |
+| **Dog** | `zero_shot` | `.102` / `.33` / `2.31` / `7` / No | `.070` / `.43` / `1.93` / `6` / No |
+| **Dog** | `few_shot` | `.058` / `.20` / `2.58` / `8` / No | `.082` / `.43` / `2.42` / `8` / No |
+| **Dog** | `procedural` | `.143` / `.68` / `2.15` / `9` / No | `.145` / `.71` / `2.18` / `9` / No |
+| **Bear** | `zero_shot` | `.113` / `.46` / `2.56` / `10` / No | `.458` / `.71` / `0.36` / `3` / No |
+| **Bear** | `few_shot` | `.082` / `.39` / `2.73` / `10` / No | `.148` / `.71` / `2.54` / `11` / No |
+| **Bear** | `procedural` | `.128` / `.69` / `2.13` / `7` / No | `.230` / `.69` / `1.69` / `7` / No |
+| **Horse** | `zero_shot` | `.098` / `.61` / `1.92` / `7` / No | `.194` / `.58` / `1.97` / `12` / No |
+| **Horse** | `few_shot` | `.152` / `.67` / `1.76` / `5` / No | `.094` / `.38` / `1.97` / `5` / No |
+| **Horse** | `procedural` | `.158` / `.76` / `2.21` / `8` / No | `.109` / `.63` / `2.08` / `8` / No |
+| **Mean $\pm$ SD ($n=12$)** | **All Clean** | **`.115 ± .037`** / **`.55 ± .22`** / **`2.33 ± .32`** / **`8.33 ± 1.72`** / **`0/12`** | **`.157 ± .106`** / **`.62 ± .14`** / **`1.97 ± .57`** / **`7.33 ± 2.64`** / **`0/12`** |
+| **Procedural (`effort=None`, 4/4 Trunc.)** | **All ($n=4$)** | **`.331 ± .225`** / **`.63 ± .41`** / **`4.05 ± 1.73`** / **`38.5 ± 23.9`** / **`3/4`** | — |
+
+#### Key Failure Modes Uncovered in P1:
+* **Glyph Collapse on `gemini-3.1-flash-lite`:** Without exemplars or structural planning, `gemini-3.1-flash-lite` suffers severe glyph collapse on `bear` zero-shot, filling $\rho=0.458$ of the canvas using only **3 distinct characters** (`|`, `:`, `.`) with $H=0.36$ bits of entropy (`0.3557`), and only 4 distinct characters ($H=1.74$ bits) on `cat` zero-shot.
+* **Prose-Plan Truncation & Lexical Leakage (`spells_name`):** On `gemini-3-flash-preview` at default `effort=None`, `procedural` prompting ("First write a 3-bullet plan, then output the canvas") caused **4/4 cells (`cat`, `dog`, `bear`, `horse`) to hit `MAX_TOKENS` (`truncated = True`)**: `cat` came out degenerate ($\rho = 0.005$), while `dog`, `bear`, and `horse` truncated inside `Step 1 -- plan` before opening a code fence (`no_code_fence`). When fallback extraction parses the raw response, the prose plan itself (e.g., `"Step 1 -- plan: a. The horse will be drawn..."`) is placed onto the grid, artificially inflating character diversity ($H=4.05 \pm 1.73$ bits, $38.5 \pm 23.9$ chars) and triggering `spells_name = True` on **3/4 cells** (`dog`, `bear`, `horse`). Bounding thinking effort with `--effort low` eliminates truncation (**4/4 clean cells**, **0/12 `spells_name`**).
 
 <p align="center">
-  <img src="report/figures/p1_contact_sheet.png" width="820" alt="P1 12-Cell Contact Sheet (gemini-3-flash-preview)">
+  <img src="report/figures/p1_contact_sheet.png" width="820" alt="P1 12-Cell Contact Sheet (gemini-3-flash-preview)"><br>
+  <em>Figure 1A: 12-cell P1 contact sheet for <code>gemini-3-flash-preview</code> (<code>--effort low</code>).</em>
 </p>
 
-| Model | Mean Ink Ratio ($\rho$) | Mean Coverage | Mean Entropy $H$ (bits) | Mean Distinct Chars | Lexical Leakage (`spells_name`) |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **`gemini-3-flash-preview`** | $0.115 \pm 0.036$ | $0.55 \pm 0.22$ | **$2.33 \pm 0.32$** | **$8.3 \pm 1.7$** | **0 / 12 cells** |
-| **`gemini-3.1-flash-lite`** | $0.100 \pm 0.038$ | $0.48 \pm 0.13$ | $1.86 \pm 0.63$ | $7.0 \pm 2.9$ | 1 / 12 cells (`horse` procedural) |
+<p align="center">
+  <img src="runs/p1_contact_sheet_flash_lite.png" width="820" alt="P1 12-Cell Contact Sheet (gemini-3.1-flash-lite)"><br>
+  <em>Figure 1B: 12-cell P1 contact sheet for <code>gemini-3.1-flash-lite</code> (note the 3-character glyph collapse on <code>bear</code> zero-shot).</em>
+</p>
+
+---
+
+### 4. P3: Calibrated Evaluation & CLIP ViT-B/32 Verification (`scripts/evaluate_clip.py`)
+
+To verify that spatial structure—and not character histogram statistics or leaked text—drives recognition, we evaluate rendered PNG bitmaps with **CLIP ViT-B/32** (`openai/clip-vit-base-patch32`) against `"a black and white line drawing of a {category}"` and subtract the stricter of two matched spatial permutations (`scramble_cells` and `scramble_ink`):
+
+| Drawing | Real CLIP Score | `scramble_cells` | `scramble_ink` | Control Gap $\Delta_{\text{CLIP}}{\uparrow}$ |
+| :--- | :---: | :---: | :---: | :---: |
+| **P2 Agentic `cat` (Turn 3, `20261028T120613-p2-cedeb4`)** | **0.3251** | 0.2737 | 0.2758 | **+0.0493** |
+| **P5 Semantic Image-to-ASCII `bear` (`runs/p5_image2ascii`)** | **0.2981** | 0.2686 | 0.2707 | **+0.0274** |
+| **P1 Procedural `horse` (`effort=low`, `20261028T135652-p1-a40f6e`)** | **0.3213** | 0.2700 | 0.3088 | **+0.0124** |
+| **Truncated Prose-Leaked `horse` (`effort=None`, `spells_name=True`)** | 0.1893 | 0.2451 | 0.2038 | **-0.0558** |
 
 ---
 
