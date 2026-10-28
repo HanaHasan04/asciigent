@@ -1,15 +1,15 @@
-"""Cheap structural metrics -- everything measurable without a judge.
+"""Structural metrics for 24x48 ASCII grids.
 
-None of these measure whether a drawing *looks like* the thing; that is P3's
-job and needs a judge calibrated against humans.  What they do measure is
-whether a sample is well-formed enough to be worth judging at all, and they
-catch the specific failure modes that would otherwise quietly inflate scores:
+Computes reference-free structural statistics and defect indicators directly
+from an :class:`AsciiGrid`:
 
-- the model writes the word instead of drawing it,
-- the model returns an almost-empty or almost-solid canvas,
-- the model ignores the format contract.
-
-Report these alongside recognizability, never instead of it.
+- ``ink_ratio``: fraction of non-blank cells on the canvas.
+- ``coverage``: fraction of the canvas spanned by the tight bounding box.
+- ``char_entropy``: Shannon entropy (in bits) of the non-blank glyph distribution.
+- ``distinct_chars``: number of unique non-blank printable characters used.
+- ``spells_name``: lexical leakage detector flagging grids that spell the
+  target category name as a contiguous word.
+- ``degenerate``: flags near-empty or near-solid grids.
 """
 
 from __future__ import annotations

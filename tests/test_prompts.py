@@ -1,4 +1,4 @@
-"""Prompt-arm tests, mostly about leakage -- the one bug that would void P1."""
+"""Unit tests for P1 prompting arms and exemplar disjointness."""
 
 import sys
 from pathlib import Path

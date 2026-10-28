@@ -1,13 +1,12 @@
 """Canonical ASCII-art representation.
 
 Every drawing in ASCIIgent is a rigid ``rows x cols`` matrix of printable ASCII.
-Generation, rendering, judging, diffing and the scrambled-character control all
-go through :class:`AsciiGrid`, so a drawing means the same thing at every stage.
+Generation, rendering, judging, diffing, and scrambled-character controls all
+operate on :class:`AsciiGrid`.
 
-The proposal names whitespace reflow by the API as a concrete risk.  Parsing is
-therefore lossy-but-loud: anything we had to fix up is recorded in a
-:class:`ParseReport` rather than silently repaired, so a sweep can report how
-often model output arrived malformed.
+Parsing is lossy-but-loud: any formatting adjustments (truncation, padding, or
+missing code fences) are recorded in a :class:`ParseReport` rather than
+silently repaired, so experiments can track format compliance directly.
 """
 
 from __future__ import annotations

@@ -1,9 +1,4 @@
-"""Round-trip and damage-reporting tests for the canonical grid.
-
-These are the tests that discharge the proposal's "API calls can reflow
-monospace whitespace" risk: whatever a model returns, we either get an exact
-canvas back or a report saying precisely what was wrong with it.
-"""
+"""Round-trip and parse-report tests for the canonical 24x48 AsciiGrid."""
 
 import sys
 from pathlib import Path

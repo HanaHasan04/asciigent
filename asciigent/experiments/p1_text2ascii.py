@@ -19,7 +19,7 @@ import json
 import sys
 from pathlib import Path
 
-if __package__ in (None, ""):  # allow `python src/asciigent/experiments/p1_...py`
+if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from asciigent.contact_sheet import sheet_from_runs

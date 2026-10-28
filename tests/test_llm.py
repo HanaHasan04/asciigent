@@ -1,9 +1,4 @@
-"""Offline tests for the inference layer.
-
-Nothing here touches the network: an uncached call on a client constructed with
-``enabled=False`` raises instead of dialling out.  The first test is the one
-that matters most -- this project must never spend money.
-"""
+"""Offline unit tests for the cached, zero-budget-enforced inference client."""
 
 import os
 import sys

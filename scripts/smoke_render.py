@@ -1,4 +1,4 @@
-"""Eyeball check: parse a drawing, render it, and render both scramble controls."""
+"""Smoke test: parse an ASCII drawing, render it to PNG, and render both scrambled controls."""
 
 import sys
 from pathlib import Path

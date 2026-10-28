@@ -1,10 +1,4 @@
-"""Tile many renders into one labelled sheet.
-
-Two uses. During the pilot it is how you look at 42 drawings in one glance
-instead of opening 42 files -- the fastest way to catch a systematic format or
-scale problem before spending on a full sweep. Later it is the raw material for
-the P3 human-rating study.
-"""
+"""Tile multiple rendered ASCII drawings into a single labeled contact sheet."""
 
 from __future__ import annotations
 

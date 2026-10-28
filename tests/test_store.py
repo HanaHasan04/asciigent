@@ -1,4 +1,4 @@
-"""The run store is the write-up's source of truth, so its shape is tested."""
+"""Unit tests for RunStore artifact persistence and index logging."""
 
 import json
 import sys

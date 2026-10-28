@@ -1,15 +1,16 @@
-"""Model-as-judge over rendered drawings, with the controls that make it usable.
+"""Model-as-judge over rendered drawings with structure-destroying scrambled controls.
 
-A judge score means nothing on its own. Two things are always measured with it:
+To mitigate the text-reading bias of vision-language models on ASCII art
+(Wang et al., 2025), the judge inspects only rendered PNG bitmaps and compares
+every real drawing against two scrambled controls:
 
-- **scrambled controls** -- the same characters with the structure destroyed.
-  If the judge scores those near the real drawing, it is reading characters,
-  not pictures, and its numbers are void (Wang et al.).
-- **human ratings** -- P3's calibration set. Until a judge is correlated
-  against humans, its scores are provisional. Report them as such.
+- **scramble_cells**: uniform random permutation of all characters across the
+  full ``24 x 48`` grid.
+- **scramble_ink**: random permutation of non-blank characters within the
+  occupied silhouette mask.
 
-This module gives P1 a dependent variable. It is deliberately minimal; P3 will
-extend it with the embedding baseline and the human study.
+The control gap ``real_score - max(scramble_cells, scramble_ink)`` isolates
+genuine geometric recognizability from character-distribution shortcuts.
 """
 
 from __future__ import annotations

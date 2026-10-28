@@ -1,16 +1,14 @@
-"""Run records and artifacts.
+"""Run artifact persistence and JSONL indexing.
 
-Four people running overlapping sweeps will produce results nobody can
-reassemble at write-up time unless every run writes the same shape.  A run is:
+Each experimental run writes a standardized directory layout::
 
     runs/<run_id>/
-        config.json      what was asked for
-        steps.jsonl      one line per turn (draft, critique, revision, judge)
-        turn0.txt/.png   the drawing at each turn, as text and as rendered
-        result.json      final metrics
+        config.json      experiment configuration
+        steps.jsonl      per-turn event log (draft, critique, revision, judge)
+        turn0.txt/.png   canvas text and rendered PNG at each turn
+        result.json      final structural and perceptual metrics
 
-plus one summary line appended to ``runs/index.jsonl`` so a whole sweep can be
-loaded into a dataframe without walking the tree.
+and appends a single summary record to ``runs/index.jsonl``.
 """
 
 from __future__ import annotations

@@ -1,8 +1,7 @@
-"""Judge an existing sweep.
+"""P3 Experiment: Calibrated VLM Judge with Scrambled Controls.
 
-Generation and judging are separate runs on purpose: the drawings are fixed
-data, and the judge is a variable we expect to change several times while P3
-calibrates it. Re-judging must never mean re-drawing.
+Evaluates generated ASCII drawings using the multimodal VLM judge and
+structure-destroying scrambled controls (scramble_cells and scramble_ink).
 
     python -m asciigent.experiments.p3_judge --runs-dir runs
     python -m asciigent.experiments.p3_judge --runs-dir runs --controls cells ink

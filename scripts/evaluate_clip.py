@@ -12,7 +12,6 @@ import json
 import sys
 from pathlib import Path
 
-# Add src to path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from asciigent.grid import AsciiGrid, DEFAULT_ROWS, DEFAULT_COLS

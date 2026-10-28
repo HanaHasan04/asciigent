@@ -1,15 +1,13 @@
-"""Cached, cost-tracked, provider-agnostic inference.
+"""Cached, cost-tracked, provider-agnostic multimodal inference client.
 
-Three jobs, in order of how much trouble they save:
+Provides three core guarantees:
 
-1. **Never spend money.** This project has a hard zero-budget constraint, so a
-   metered provider raises :class:`PaidProviderRefused` unless someone passes
-   ``allow_paid=True`` on purpose. Cheapness is not the goal; zero is.
-2. **Never pay twice.** Every response is cached on disk keyed by the full
-   request, so re-running a sweep re-calls only what actually changed.
-3. **Stay inside the free tier's rate limit.** Pacing lives in the provider;
-   what matters here is that the sweep is resumable, because a free-tier run
-   that trips a daily quota must pick up where it stopped rather than restart.
+1. **Zero-cost enforcement**: Metered providers raise :class:`PaidProviderRefused`
+   unless ``allow_paid=True`` is explicitly passed.
+2. **Deterministic disk caching**: Responses are cached on disk keyed by the
+   full request payload, ensuring reproducible and resumable sweeps.
+3. **Rate-limit resilience**: Works with provider-level pacing and quota-aware
+   error handling so interrupted sweeps resume cleanly from the cache.
 """
 
 from __future__ import annotations
