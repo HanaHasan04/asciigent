@@ -93,7 +93,7 @@ To ensure strict experimental continuity, both **P4 (Conversational Editing)** a
 
 We evaluate three one-shot prompting strategies (**Zero-Shot**, **Few-Shot** with 4 disjoint exemplars `fish`/`house`/`tree`/`sailboat`, and **Procedural Chain-of-Thought**) across four target categories (`cat`, `dog`, `bear`, `horse`) on two Gemini family models: **`gemini-3-flash-preview`** and **`gemini-3.1-flash-lite`**.
 
-| Model | Mean Ink Ratio ($\rho$) | Mean Coverage | Mean Entropy $H{\uparrow}$ (bits) | Mean Distinct Chars${\uparrow}$ | Lexical Leakage (`spells_name`)${\downarrow}$ |
+| Model | Mean Ink Ratio ($\rho$) | Mean Coverage | Mean Entropy (bits) | Mean Distinct Chars | Lexical Leakage (`spells_name`) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **`gemini-3-flash-preview` (`--effort low`)** | `.115 ± .037` | `.55 ± .22` | **`2.33 ± .32`** | **`8.33 ± 1.72`** | **`0 / 12`** |
 | **`gemini-3.1-flash-lite`** | `.157 ± .106` | `.62 ± .14` | `1.97 ± .57` | `7.33 ± 2.64` | **`0 / 12`** |
