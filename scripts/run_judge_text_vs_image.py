@@ -143,7 +143,7 @@ def _load_drawing(path: str | None) -> AsciiGrid:
 
 def _fmt_verdict(v: Verdict) -> str:
     rating = str(v.rating) if v.rating is not None else "?"
-    correct = "✓" if v.correct else "✗"
+    correct = "[PASS]" if v.correct else "[FAIL]"
     failed = " [FAILED]" if v.failed else ""
     return f"identified={v.identified!r:20s}  rating={rating}  correct={correct}{failed}"
 
@@ -206,16 +206,16 @@ def main(argv: list[str] | None = None) -> int:
 
     if spells_name and txt_verdict.correct and not img_verdict.correct:
         print(
-            "\n⚠  TEXT-READING CONFOUND DETECTED: text judge correctly identified "
-            "the subject, but the image judge did not — and the drawing spells "
+            "\n[WARNING] TEXT-READING CONFOUND DETECTED: text judge correctly identified "
+            "the subject, but the image judge did not -- and the drawing spells "
             "the name. The text judge is likely reading characters, not shapes."
         )
     elif txt_verdict.correct and img_verdict.correct:
-        print("\n✓ Both judges agree. No confound detected (both correct).")
+        print("\n[OK] Both judges agree. No confound detected (both correct).")
     elif not txt_verdict.correct and not img_verdict.correct:
-        print("\n✗ Neither judge identified the drawing correctly.")
+        print("\n[FAIL] Neither judge identified the drawing correctly.")
     else:
-        print("\n→ Judges disagree. Further analysis needed.")
+        print("\n-> Judges disagree. Further analysis needed.")
 
     print(f"\nLLM calls: {client.n_calls}, cache hits: {client.n_cache_hits}")
     return 0

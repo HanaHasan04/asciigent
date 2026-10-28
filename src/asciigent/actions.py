@@ -273,7 +273,10 @@ def parse_action_blocks(response_text: str) -> list[dict[str, Any]]:
             if isinstance(data, list):
                 commands.extend(d for d in data if isinstance(d, dict))
             elif isinstance(data, dict):
-                commands.append(data)
+                if "actions" in data and isinstance(data["actions"], list):
+                    commands.extend(d for d in data["actions"] if isinstance(d, dict))
+                elif "action" in data:
+                    commands.append(data)
         except json.JSONDecodeError:
             continue
 
