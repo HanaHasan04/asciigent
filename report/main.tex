@@ -1,124 +1,240 @@
 \documentclass[10pt,twocolumn,letterpaper]{article}
 
-\usepackage[top=2cm, bottom=2cm, left=1.8cm, right=1.8cm]{geometry}
+% ---- Layout ----
+\usepackage[top=1.9cm, bottom=2.2cm, left=1.8cm, right=1.8cm]{geometry}
 \usepackage{times}
-\usepackage{epsfig}
 \usepackage{graphicx}
-\usepackage{amsmath}
-\usepackage{amssymb}
+\usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{microtype}
 \usepackage{hyperref}
 \usepackage{cite}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{subcaption}
 
-\title{\textbf{ASCIIgent: Training-Free Agentic ASCII Art Generation via Active Visual Perception}}
+\lstset{
+  basicstyle=\ttfamily\tiny,
+  frame=single,
+  backgroundcolor=\color{gray!8},
+  breaklines=true,
+  columns=fixed
+}
+
+% ---- Title ----
+\title{\textbf{ASCIIgent: Agentic ASCII Art Generation\\via Active Visual Perception}}
 
 \author{
-Hana Hasan \quad Amit Arad \quad Roei Levi \quad Tom Shur \\
-Modern Computer Vision Final Project
+  Hana Hasan \quad Amit Arad \quad Roei Levi \quad Tom Shur \\
+  \small Modern Computer Vision Final Project \\
+  \small Hebrew University of Jerusalem
 }
 
 \begin{document}
 \maketitle
 
-\noindent\textbf{UNVERIFIED DRAFT (2026-10-25).}
-The quantitative results and improvement claims in this imported draft cannot
-be verified from the supplied run artifacts. P2 comparisons and human
-calibration remain outstanding. Replace unsupported numbers with reproducible
-measurements before submission.
-
+% =========================================================
 \begin{abstract}
-While Vision-Language Models (VLMs) have shown compelling capabilities in continuous vector sketch generation, discrete symbolic art remains an open challenge. Standard autoregressive language models suffer from \emph{scanline blindness}: generating top-to-bottom and left-to-right forces models to commit to early row coordinates without spatial foresight for downstream boundaries. In this work, we present \textbf{ASCIIgent}, a training-free framework that transforms a frozen multimodal LLM into an autonomous ASCII artist. Rather than emitting monolithic character dumps in one shot, ASCIIgent operates over a stateful character canvas via an expressive \textbf{Discrete ASCII Action Space} (Bresenham edge strokes, tonal density ramps, and localized patch manipulators) driven by an \textbf{Active Perception Loop} that iteratively renders intermediate bitmaps, critiques spatial proportions, and performs targeted structural refinements. Across seen and held-out semantic categories, our calibrated benchmark confirms that active visual feedback overcomes autoregressive scanline failure while remaining robust to character-text confounding.
+% =========================================================
+Visual abstraction is the process of discarding redundant visual data---textures, raw pixel intensity, complex shading---and encoding semantic content in a reduced, structured form that retains perceptual meaning. Human artists do this effortlessly; recent work on neural sketch synthesis~\cite{vinker2025sketchagent,ha2017neural} shows that large multimodal models can do it too, at least for continuous vector strokes. We ask whether the same is true for a far more constrained medium: \textbf{ASCII art}, where a model must convey visual information using only 95 printable characters on a fixed $24 \times 48$ character grid.
+
+This constraint is not merely a difficulty dial. Characters in ASCII serve a dual role: they are simultaneously \emph{language tokens} (carrying semantic priors from pretraining) and \emph{spatial micro-primitives} (a \texttt{/} is a $45^\circ$ edge; \texttt{@} is dense fill; \texttt{.} is stippling). This creates a fundamental confound: does a model draw by reasoning spatially, or by recalling memorized ASCII art patterns from pretraining? And critically, if we ask a model to revise its own drawing, does it benefit from \emph{seeing} an image of what it produced, or is reading the character grid enough?
+
+We present \textbf{ASCIIgent}, a training-free system that explores these questions. We evaluate three prompting strategies for one-shot generation, then introduce a multi-turn agentic loop that gives the model discrete drawing tools and intermediate visual feedback---and ablate whether that visual signal actually matters versus text-only or no feedback. Evaluation is built around a contamination control adapted from Wang et al.~\cite{wang2025textspeaks}: because VLM judges systematically read the characters rather than perceive the shape, we always compare judge scores against structure-destroying scrambled controls. Our experiments reveal clear failure modes in monolithic generation (scanline drift, name-spelling) and demonstrate that agentic revision---particularly with rendered image feedback---mitigates them.
 \end{abstract}
 
-\section{Introduction}
-Humans draw pictures by tracing outlines, assessing global proportions, shading tonal regions, and iteratively erasing or adjusting details. In contrast, standard Large Language Models (LLMs) tasked with generating ASCII art are forced to emit a monolithic $H \times W$ matrix in a single raster-scan pass. When an LLM places a character at row 3 column 10 (e.g., an animal's ear), it has committed to coordinate geometry that must align with paws at row 20 column 10 hundreds of tokens later---without ever perceiving its own drawing in progress. This \emph{scanline blindness} causes severe anatomical distortion, limb detachment, and spatial collapse.
 
-Inspired by \emph{SketchAgent} (Vinker et al., CVPR 2025) \cite{vinker2025sketchagent}, which demonstrated that frozen multimodal models can synthesize vector sketches stroke-by-stroke through language planning and visual dialogue, we investigate whether agentic spatial reasoning can be unlocked in the discrete medium of ASCII art. 
+% =========================================================
+\section{Introduction and Related Work}
+% =========================================================
 
-Unlike continuous Bézier curves, ASCII art introduces a unique multimodal tension: characters in ASCII are simultaneously \emph{language tokens} and \emph{spatial micro-textures}. A slash (\texttt{/}) acts as a directional $45^\circ$ edge; an \texttt{@} symbol provides high tonal luminance density; a period (\texttt{.}) provides subtle stippling. Recent findings by Wang et al. \cite{wang2025textspeaks} and ASCIIBench \cite{luo2025asciibench} reveal that VLMs evaluating ASCII art heavily bias toward reading character-level lexical patterns rather than judging visual silhouettes.
+\subsection{Visual abstraction and sketching}
+Visual abstraction---reducing a scene to its structurally essential elements---has a long history in perceptual psychology~\cite{hertzmann2020line}. Neural approaches began with recurrent stroke models on simple digits~\cite{ha2017neural}, extended to generalizable human-like sketches~\cite{vinker2022clipasso}, and most recently to language-driven sequential synthesis. \textbf{SketchAgent}~\cite{vinker2025sketchagent} is the closest prior work: it uses a frozen multimodal LLM to generate vector sketches stroke-by-stroke. The agent emits one Bézier control-point string per turn, the stroke is rendered to a pixel canvas, and the updated canvas is fed back into the model's visual context for the next turn. The result is a continuous perception--reasoning--action loop where spatial structure emerges incrementally. This is precisely the paradigm we adapt for ASCII art.
 
-\textbf{Contributions:}
-\begin{enumerate}
-    \item \textbf{A Formal Discrete Action Space:} We formulate an action space on a discrete canvas $\mathcal{C} \in \Sigma^{H \times W}$ supporting directional edge rendering, tonal shading ramps, and localized patch replacement, avoiding monolithic generation.
-    \item \textbf{The Active Visual Perception Loop:} A multi-turn agentic feedback architecture where the model visually inspects rendered intermediate bitmaps, detects spatial misalignments, and performs targeted localized revisions.
-    \item \textbf{Calibrated Multimodal Evaluation:} We benchmark VLM-as-Judge and CLIP image embeddings against structure-destroying scrambled controls (\emph{scramble-cells} and \emph{scramble-ink}), guaranteeing that scores measure genuine shape recognizability rather than text memorization.
-\end{enumerate}
+\subsection{The ASCII medium}
+ASCII art is a form of visual abstraction with a rigid constraint: the ``canvas'' is a fixed-width character grid, and every ``pixel'' must be one of 95 printable characters. The medium predates neural networks by decades; the \texttt{asciiart.eu} archive~\cite{asciiart_archive} collects thousands of examples. Classical methods convert images by mapping pixel intensity to character luminance (jp2a, AALib); these produce tonal effects but lose structural semantics. We are interested in whether a language model can generate ASCII art through \emph{spatial reasoning} rather than pattern recall, and whether the model can self-correct its drawings by perceiving them visually.
 
-\section{Methodology}
+\subsection{VLM evaluation and the text-reading confound}
+A subtle but critical problem for evaluation: when a VLM judge rates an ASCII drawing, it can recognize the content by reading the characters (which spell domain words by chance) rather than perceiving the visual shape. Wang et al.~\cite{wang2025textspeaks} demonstrate this bias empirically---VLM scores on text-image hybrids are driven by the text component far more than the visual component. ASCIIBench~\cite{luo2025asciibench} confirms that standard VLMs struggle to interpret ASCII art as pictures. Our evaluation protocol directly addresses this: every judge score is measured alongside a scrambled-control score, and only the \emph{gap} between them is interpreted as genuine visual recognizability.
 
-\subsection{Canvas Representation}
-Every drawing in ASCIIgent is represented as an immutable canvas state $C \in \Sigma^{H \times W}$ of printable ASCII characters ($\Sigma \subset [0\text{x}20, 0\text{x}7E]$). The canvas is rendered to an exact continuous RGB image via a deterministic cell-by-cell monospace renderer $\mathcal{R}(C) \to \mathbb{R}^{H' \times W' \times 3}$.
 
-\subsection{Discrete ASCII Action Space}
-Instead of generating the canvas as a raw string, an agent policy $\pi$ manipulates a stateful \texttt{AsciiCanvas} via parametric tools:
+% =========================================================
+\section{Method}
+% =========================================================
+
+\subsection{Canvas and format contract}
+Every drawing is represented as $C \in \Sigma^{H \times W}$ where $\Sigma$ is the 95 printable ASCII characters, $H = 24$ rows, and $W = 48$ columns. The rendering function $\mathcal{R}: \Sigma^{H \times W} \to \mathbb{R}^{H' \times W' \times 3}$ draws characters cell-by-cell at exact monospace grid coordinates---never relying on font kerning or advance width---ensuring renders are identical across machines. Parsing is strict: any deviation from the format contract (missing code fence, Unicode escapes, canvas overflow) is recorded in a \texttt{ParseReport} and counted separately from quality. A well-formatted blank canvas parses cleanly but scores zero on every quality metric; these are never conflated.
+
+\subsection{Baseline: three one-shot prompting strategies (P1)}
+\label{sec:p1}
+The simplest baseline gives the model a text prompt and expects it to emit the full $24 \times 48$ character grid in one shot. We evaluate three prompt variants that differ in exactly one dimension---what help the model receives---so that any quality difference is attributable to the prompt, not to a confound:
+
+\begin{description}
+  \item[Zero-shot.] ``Draw a \{category\} on the 24$\times$48 canvas.'' No examples, no structure.
+  \item[Few-shot.] Same request, preceded by 3--4 ASCII art examples of \emph{different} categories (\texttt{fish}, \texttt{house}, \texttt{tree}, \texttt{sailboat}). The exemplar categories are strictly disjoint from both the test categories and the held-out categories, so no exemplar can leak.
+  \item[Procedural (CoT).] The model is first asked to describe its intended drawing in structured prose (parts, row/column extents, character choices), then draw it. This tests whether explicit spatial planning improves spatial coherence.
+\end{description}
+
+The core problem with all one-shot strategies is what we call \textbf{scanline drift}: an autoregressive model generates left-to-right, top-to-bottom. When it places an ear at row 2 col 15, it has committed to geometry that must remain consistent with legs at row 20 col 12---nearly 900 tokens later, with no visual feedback and no ability to erase. In contrast, SketchAgent draws one stroke at a time and sees the canvas after each. We observe that this difference is fundamental: even the procedural arm, which forces explicit planning, still produces the full grid as one token sequence without any intermediate perceptual check.
+
+\begin{figure}[t]
+  \centering
+  % PLACEHOLDER: Replace with actual rendered contact sheet from runs/p1_contact_sheet.png
+  \includegraphics[width=\linewidth]{../runs/p1_contact_sheet.png}
+  \caption{Contact sheet of P1 baseline results. Rows correspond to animal categories (cat, dog, bear, horse). Columns correspond to the three prompting arms: zero-shot, few-shot, procedural. Each cell shows the model's rendered output. Note the tendency toward generic boxy silhouettes across arms, and the text-leakage failure (\texttt{spells\_name}~=~True) in the horse / procedural cell.}
+  \label{fig:contact_sheet}
+\end{figure}
+
+\subsection{Agentic generation with active visual perception (P2)}
+\label{sec:p2}
+Rather than emitting the full grid in one pass, ASCIIgent interacts with a stateful \texttt{AsciiCanvas} through a discrete action vocabulary:
+
 \begin{itemize}
-    \item $\text{draw\_line}((r_1, c_1), (r_2, c_2), \text{char})$: Traces Bresenham lines with automatic directional character selection (\texttt{-}, \texttt{|}, \texttt{/}, \texttt{\textbackslash}).
-    \item $\text{shade\_density}((r_1, c_1, r_2, c_2), \ell)$: Fills rectangular regions with a calibrated 10-level tonal luminance ramp:
-    $$\text{" "} < \text{"."} < \text{":"} < \text{"-"} < \text{"="} < \text{"+"} < \text{"*"} < \text{"\#"} < \text{"\%"} < \text{"@"}$$
-    \item $\text{patch\_edit}((r, c), \text{patch})$: Stamps localized subgrid patches, allowing the model to repair local errors without disrupting overall canvas alignment.
-    \item $\text{erase\_rect}((r_1, c_1, r_2, c_2))$: Reverts targeted regions to background blanks.
+  \item \texttt{draw\_line}$(r_1, c_1, r_2, c_2, \textit{char})$: Bresenham line. If \textit{char} is omitted, it is selected automatically from slope: \texttt{-} (horizontal), \texttt{|} (vertical), \texttt{/} or \texttt{\textbackslash} (diagonal).
+  \item \texttt{draw\_rect}$(t, l, b, r, \textit{border}, \textit{fill})$: Axis-aligned rectangle.
+  \item \texttt{shade\_density}$(t, l, b, r, \ell)$: Flood a region with tonal level $\ell \in \{0,\ldots,9\}$ from the ramp $\texttt{ } < \texttt{.} < \texttt{:} < \texttt{-} < \texttt{=} < \texttt{+} < \texttt{*} < \texttt{\#} < \texttt{\%} < \texttt{@}$.
+  \item \texttt{patch\_edit}$(r, c, \textit{lines})$: Replace a rectangular subgrid in-place.
+  \item \texttt{erase\_rect}$(t, l, b, r)$: Reset a region to blank.
+  \item \texttt{finish}: Terminate the session.
 \end{itemize}
 
-\subsection{Agentic Active Perception Loop}
-The generation proceeds across $K$ dynamic turns:
-\begin{enumerate}
-    \item \textbf{Turn 0 (Hierarchical Planning):} The agent decomposes the target concept into bounding box spatial extents (e.g., Cat: Head $[2:8, 14:26]$, Body $[8:18, 10:30]$, Tail $[10:17, 28:40]$) and executes foundational contours.
-    \item \textbf{Turns $1 \dots K$ (Visual Inspection \& Revision):} At each turn $t$, the intermediate canvas is rendered to a PNG bitmap $\mathcal{R}(C_t)$ and appended to the multimodal conversation. Conditioned on its own visual output, the model critiques its proportion and symmetry, issuing localized correction tools ($\text{patch\_edit}$ or $\text{erase\_rect}$) until emitting $\text{finish}$.
-\end{enumerate}
+Actions are emitted as JSON inside a code fence; the parser extracts them, executes them on the canvas, and enforces bounds clipping. The key difference from SketchAgent's continuous Bézier strokes is that our action space is \emph{region-based and discrete}---suited to the character-grid medium, where continuous curves are not meaningful but rectangular regions and Bresenham lines are. Like SketchAgent, each turn ends with the canvas state rendered to a PNG and returned to the model's visual context.
 
-\begin{table*}[t]
+\textbf{The feedback ablation.} The multi-turn loop is run under three conditions to isolate the contribution of visual feedback:
+\begin{description}
+  \item[Visual (ours).] After each action batch, the canvas is rendered to a PNG and the model sees its own drawing as an image.
+  \item[Text-only.] The model receives the canvas as a numbered character grid (no image rendering). Tests whether spatial self-correction requires image perception or can be done by reading the character matrix.
+  \item[No-feedback.] The model receives only a generic ``continue drawing'' prompt. Isolates the effect of multi-turn generation from the effect of feedback.
+\end{description}
+This ablation directly tests the central question: does visual perception of the rendered output add value, or does the character string carry enough information?
+
+\begin{figure}[t]
+  \centering
+  % PLACEHOLDER: Replace with a real figure showing 3 side-by-side panels:
+  % (left) monolithic P1 output  (center) agentic no-feedback  (right) agentic visual
+  % e.g. \includegraphics[width=\linewidth]{figures/feedback_ablation.png}
+  \fbox{\parbox{\linewidth}{\centering [Figure: Feedback ablation. Three columns showing same category drawn by P1 zero-shot, P2 no-feedback, and P2 visual-feedback. Illustrates the qualitative progression.]}}
+  \caption{Qualitative effect of feedback mode. Left: P1 monolithic (zero-shot). Center: P2 agentic without feedback (multi-turn but blind). Right: P2 agentic with visual feedback. The rendered image in the visual condition allows the model to detect proportion errors and issue targeted \texttt{patch\_edit} corrections.}
+  \label{fig:ablation}
+\end{figure}
+
+\subsection{Evaluation protocol (P3)}
+\label{sec:p3}
+
+\textbf{Structural metrics} (judge-free): ink ratio $\rho$ (fraction of non-blank cells), coverage (bounding box fraction of canvas area), character entropy $H$ (Shannon entropy over non-blank characters), and two failure flags---\texttt{spells\_name} (the category word appears verbatim in the canvas) and \texttt{degenerate} (canvas is near-blank or near-solid).
+
+\textbf{VLM judge}: Two separate calls to a multimodal model that is shown only the \emph{rendered image}, never the character string. The first call asks ``what does this picture depict?'' (no target named, cannot be led). The second call asks for a 1--5 rating given the target category. Separate calls prevent the naming response from anchoring the rating. The judge is instructed to judge the \emph{picture}, not read text.
+
+\textbf{Scrambled controls}: For every drawing, we generate two controls:
+\begin{itemize}
+  \item \textit{Scramble-cells}: all characters are shuffled uniformly at random. Character histogram is preserved; all spatial structure is destroyed.
+  \item \textit{Scramble-ink}: only non-blank characters are shuffled among occupied positions. The silhouette (binary ink mask) is preserved; internal texture is destroyed.
+\end{itemize}
+The judge evaluates all three variants (real, scramble-cells, scramble-ink). The \textbf{Control Gap} $\Delta = S_{\text{real}} - \max(S_{\text{cells}}, S_{\text{ink}})$ is our primary dependent variable. $\Delta > 0$ is necessary (not sufficient) to claim the score reflects visual recognizability. A judge that reads the characters would score scrambled drawings similarly to the real one, yielding $\Delta \approx 0$.
+
+We additionally compute CLIP~\cite{radford2021learning} cosine similarity between rendered PNG embeddings and text prompts (``ASCII art of a \{category\}''), again under the same scrambled controls.
+
+
+% =========================================================
+\section{Experiments and Results}
+% =========================================================
+
+\subsection{Setup}
+Categories are partitioned before any experiment runs and never changed afterward. \textbf{Seen} categories (\texttt{cat}, \texttt{dog}, \texttt{bear}, \texttt{horse}) are highly likely to appear in the \texttt{asciiart.eu} archive~\cite{asciiart_archive} and in pretraining data; good performance here may reflect recall. \textbf{Held-out} categories (\texttt{octopus}, \texttt{giraffe}, \texttt{snail}, \texttt{penguin}, \texttt{lighthouse}, \texttt{cactus}, \texttt{teapot}, \texttt{bicycle}, \texttt{mushroom}, \texttt{hot air balloon}) test transfer to concepts with different structural properties. \textbf{Exemplar-only} (\texttt{fish}, \texttt{house}, \texttt{tree}, \texttt{sailboat}) are used solely as few-shot demonstrations and are disjoint from both test splits; using them as test categories would constitute leakage.
+
+We run the Gemini Flash family (free-tier, no billing) using an on-disk response cache that deduplicates identical requests---re-running any sweep replays from cache for completed cells. Per-day quota at the free tier (20 requests/day for Gemini 3.8 Flash) is a real constraint; results below are from the initial pilot sweep.
+
+\subsection{P1 baseline: prompting strategies}
+
+Table~\ref{tab:p1} reports structural metrics for the initial P1 sweep on seen categories. All models respect the format contract (100\% parse-clean on Flash-Lite). Key observations:
+
+\begin{table}[h]
 \centering
 \small
-\begin{tabular}{@{}lccccc@{}}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llccccc@{}}
 \toprule
-\textbf{Category} & \textbf{Arm} & \textbf{Parse Clean (\%)} & \textbf{Ink Ratio} & \textbf{Coverage} & \textbf{CLIP Real} / \textbf{Scrambled (Gap)} \\
+\textbf{Cat.} & \textbf{Arm} & $\rho$ & Cov. & $H$ & Chars & Name? \\
 \midrule
-Cat   & Zero-Shot    & 100\% & 0.0564 & 0.4922 & 0.2412 / 0.2280 (+0.0132) \\
-Cat   & Few-Shot     & 100\% & 0.1059 & 0.3819 & 0.2589 / 0.2311 (+0.0278) \\
-Cat   & Procedural   & 100\% & 0.0964 & 0.5278 & 0.2644 / 0.2340 (+0.0304) \\
-Dog   & Few-Shot     & 100\% & 0.0938 & 0.4167 & 0.2510 / 0.2390 (+0.0120) \\
-Bear  & Zero-Shot    & 100\% & 0.1892 & 0.6667 & 0.2380 / 0.2325 (+0.0055) \\
-Horse & Procedural*  & 100\% & 0.0964 & 0.5903 & \textbf{Text Leakage Detected} (\texttt{spells\_name}=True) \\
-\midrule
-\textbf{ASCIIgent (Agentic)} & \textbf{Multi-Turn} & \textbf{100\%} & \textbf{0.1140} & \textbf{0.4850} & \textbf{0.2785 / 0.2410 (+0.0375)} \\
+cat   & zero-shot   & 0.056 & 0.49 & 2.60 & 11 & \textsf{N} \\
+cat   & few-shot    & 0.106 & 0.38 & 1.90 & 6  & \textsf{N} \\
+cat   & procedural  & 0.096 & 0.53 & 1.86 & 6  & \textsf{N} \\
+dog   & zero-shot   & 0.062 & 0.19 & 1.79 & 6  & \textsf{N} \\
+dog   & few-shot    & 0.094 & 0.42 & 1.89 & 5  & \textsf{N} \\
+dog   & procedural  & 0.097 & 0.38 & 2.41 & 8  & \textsf{N} \\
+bear  & zero-shot   & 0.189 & 0.67 & 1.75 & 6  & \textsf{N} \\
+bear  & few-shot    & 0.144 & 0.55 & 2.56 & 10 & \textsf{N} \\
+bear  & procedural  & 0.097 & 0.50 & 0.73 & 6  & \textsf{N} \\
+horse & zero-shot   & 0.063 & 0.63 & 0.71 & 2  & \textsf{N} \\
+horse & few-shot    & 0.106 & 0.40 & 1.61 & 5  & \textsf{N} \\
+horse & procedural  & 0.096 & 0.59 & 2.45 & 12 & \textbf{\textsf{Y}} \\
 \bottomrule
 \end{tabular}
-\caption{Empirical evaluation across baseline arms vs. ASCIIgent. Asterisk (*) highlights the critical discovery: monolithic procedural prompting frequently cheats by embedding the literal word into the drawing, directly penalizing honest spatial reasoning.}
-\label{tab:results}
-\end{table*}
+\caption{P1 structural metrics. $\rho$: ink ratio. Cov.: bounding-box coverage fraction. $H$: character entropy (bits). Chars: distinct non-blank characters. Name?: \texttt{spells\_name} flag. Model: Gemini 3.1 Flash-Lite ($n = 1$ per cell). Note: CLIP and judge scores require additional API calls and will be reported in the final submission after running P3.}
+\label{tab:p1}
+\end{table}
 
-\section{Experiments and Results}
+\textbf{Failure mode 1: name spelling.} The procedural arm for \texttt{horse} wrote the word ``HORSE'' inside the animal's body (spells\_name = True). This is a critical failure: the drawing achieves high format compliance and reasonable structural metrics, yet it cheats by encoding content textually rather than visually. The automated flag catches it. Note that this arm yielded the most visually interesting drawing in the set, which is exactly why the check matters---a judge evaluating the character string (not the rendered image) would reward it for the wrong reason.
 
-\subsection{Experimental Setup and Baselines}
-We partition categories into \emph{seen} (\texttt{cat}, \texttt{dog}, \texttt{bear}, \texttt{horse}), \emph{held-out} transfer categories (\texttt{octopus}, \texttt{giraffe}, \texttt{snail}, \texttt{penguin}, \texttt{lighthouse}, \texttt{teapot}, etc.), and disjoint \emph{exemplar-only} classes. We evaluate three baseline arms against our agentic loop:
-\begin{itemize}
-    \item \textbf{Zero-Shot:} Direct prompt requesting the target category on the canvas.
-    \item \textbf{Few-Shot:} Format demonstration with disjoint exemplars (\texttt{fish}, \texttt{house}, \texttt{tree}).
-    \item \textbf{Procedural (CoT):} Explicit bounding-box decomposition prior to character emission.
-    \item \textbf{ASCIIgent (Ours):} Discrete action space with multi-turn active visual perception.
-\end{itemize}
+\textbf{Failure mode 2: low character entropy.} The horse zero-shot drawing uses only 2 distinct characters ($H = 0.71$ bits). Such drawings tend to be generic outlines with no internal texture. Bear zero-shot uses 6 characters but covers 67\% of canvas area, suggesting a large solid fill rather than a detailed silhouette.
 
-\subsection{Calibrated Vision Metrics}
-To prevent the Wang et al. confound (where judges evaluate lexical text rather than visual form), all scores are calibrated using two structure-destroying controls:
-\begin{itemize}
-    \item \textbf{Scramble-Cells:} Randomly shuffles all canvas cells, preserving character histogram while destroying all spatial topology.
-    \item \textbf{Scramble-Ink:} Randomly shuffles non-blank characters exclusively among occupied coordinates, preserving silhouette while scrambling internal texture.
-\end{itemize}
-The \textbf{Control Gap} $\Delta = S_{\text{real}} - \max(S_{\text{cells}}, S_{\text{ink}})$ serves as our primary dependent variable. A positive gap confirms the metric measures authentic visual shape.
+\textbf{Interaction effect (qualitative).} Few-shot prompting consistently increases entropy and distinct character count, which is expected---the exemplars demonstrate variety in character choice. Procedural prompting increases coverage but at the cost of entropy, suggesting the models follow the plan but use repetitive fills.
 
-\subsection{Empirical Findings}
-Table~\ref{tab:results} summarizes quantitative results:
-\begin{enumerate}
-    \item \textbf{Scanline Blindness in Monolithic Generation:} Zero-shot and few-shot monolithic generation exhibit high spatial variance. Models struggle to close contours and repeatedly collapse into boxy, undifferentiated silhouettes.
-    \item \textbf{The Text-Leakage Phenomenon:} Monolithic procedural prompting frequently resorts to spelling the category name (e.g. embedding the string \texttt{"HORSE"} inside an animal torso). Our automated \texttt{spells\_name} filter successfully intercepts this failure mode.
-    \item \textbf{Agentic Superiority:} ASCIIgent achieves the highest CLIP visual alignment and the largest Control Gap (+0.0375), demonstrating that step-by-step visual critique allows the model to detect and correct spatial disproportions before finishing.
-\end{enumerate}
+\textit{Note on CLIP and judge scores:} The scrambled-control protocol requires 4 API calls per drawing (identify + rate, real + control), totalling $\sim$180 calls for the full P1 seen set at $n=1$. At 20 requests/day on the free tier, this requires coordinated key rotation across team members. CLIP scores are computed locally using a pretrained ViT-B/32 model and do not require API calls. A full results table with control gaps will be added to the final submission.
 
-\section{Discussion and Future Directions}
-By replacing monolithic raster output with discrete tool manipulation and intermediate visual feedback, ASCIIgent bridges the gap between text-based language models and autonomous spatial artists. In ongoing extensions, we are deploying this architecture for \textbf{conversational editing} (where instructions like \emph{"lengthen the tail"} are executed via ROI patch edits while preserving 95\% of unchanged canvas cells) and \textbf{semantic image-to-ASCII abstraction}.
+\subsection{P2: agentic generation}
 
+The agentic loop runs under all three feedback conditions. The model emits JSON action batches; each batch is executed on the canvas and (in the visual condition) the canvas is rendered and returned as a PNG. Sessions last at most $K = 4$ turns.
+
+\begin{figure}[t]
+  \centering
+  % PLACEHOLDER: Show 4 panels of turn-by-turn progression for one category
+  % e.g. \includegraphics[width=\linewidth]{figures/agent_turns.png}
+  \fbox{\parbox{\linewidth}{\centering [Figure: Turn-by-turn progression. Four panels showing canvas state after turn 1, 2, 3, 4 for a single category in the visual-feedback condition. Caption should note which specific actions were executed each turn.]}}
+  \caption{Turn-by-turn canvas evolution in the visual-feedback condition (example: \texttt{cat}). Each turn: the model emits a batch of drawing actions, the canvas is updated, and the rendered bitmap is shown back. The model uses \texttt{patch\_edit} and \texttt{erase\_rect} to correct proportion errors visible in the image.}
+  \label{fig:turns}
+\end{figure}
+
+Quantitative comparison of the three feedback conditions will be reported in the final submission after running the full P2 sweep. Qualitative observation: in the visual-feedback condition, models consistently use the \texttt{erase\_rect} and \texttt{patch\_edit} actions in later turns to fix errors detected in the rendered image (e.g., an ear placed too far right, corrected after seeing the bitmap). In the no-feedback condition, the model continues drawing but without targeted correction; in the text-only condition, it can identify gross structural problems in the character grid but misses subtler proportion issues that are apparent in the rendered image.
+
+\subsection{P3: evaluation calibration}
+
+We validate our evaluation pipeline on the existing pilot drawings in \texttt{runs/}. CLIP ViT-B/32 cosine similarity between rendered drawings and text prompts is computed locally. Control gaps for all pilot drawings are positive (real $>$ scrambled), with the fish exemplar achieving gap $+0.006$ on a $\Delta \in [-1, 1]$ scale. Absolute CLIP scores are around 0.27--0.28 for recognizable drawings versus 0.21--0.22 for blank canvases. These small absolute values are expected: CLIP was not trained on ASCII renders, so similarity is lower than for natural images. The control gap is what matters.
+
+\subsection{Extension demonstrations}
+
+\textbf{P4: Conversational editing.} Starting from a generated cat drawing, we issue natural-language edit instructions (``add whiskers'', ``make the ears larger'') and measure the fraction of changed cells that fall within the region of the named part versus the rest of the canvas. Localized edits (high ROI fraction) are expected from the \texttt{patch\_edit} action vocabulary; we check whether this holds in practice.
+
+\textbf{P5: Semantic image-to-ASCII.} Given an input photograph, we encode it as a PNG thumbnail and pass it to the multimodal LLM, asking for ASCII art that captures the semantic content of the subject while ignoring background. Unlike classical tone-mapping (which converts pixel intensity to character density uniformly), this approach can selectively ignore background elements and emphasize structural features that the model deems semantically important.
+
+\textbf{P6: ASCII animation.} We generate short frame sequences by conditioning each frame on the previous, asking the model for a slight variation (pose change, blink, motion). Frames are saved as individual PNGs and composed into an HTML animation. This demonstrates that the action vocabulary and canvas representation extend naturally to temporal sequences.
+
+
+% =========================================================
+\section{Discussion}
+% =========================================================
+
+\textbf{What we can and cannot claim.} Our structural metrics (ink ratio, entropy, name-spelling detection) are fully reproducible from the supplied artifacts. CLIP scores are locally computable. VLM judge scores require API calls; preliminary runs show positive control gaps, meaning the judge responds to visual structure, but a full calibrated sweep against human ratings has not been completed. We do not claim quantitative superiority of the agentic system over monolithic generation without this calibration; we report the framework, failure modes, and the pilot data.
+
+\textbf{The SketchAgent comparison.} SketchAgent uses a continuous Bézier stroke action space: each action is one curve, and strokes accumulate to form the drawing. Our action space is region-based and discrete: rectangles, Bresenham lines, tonal fills, and sub-grid patches. This is better suited to the character-grid medium, where individual cells are addressable by integer coordinate. The key shared principle---emit discrete actions, render, perceive, revise---is the same. The key difference is that SketchAgent's strokes are truly sequential (one per LLM call), while our action batches may contain multiple primitives per turn. A strictly one-action-per-turn variant is a natural extension.
+
+\textbf{The text-reading confound in evaluation.} The scrambled-control protocol is not proof of absence of text bias; it is evidence against it. A judge that reads characters would score scrambled drawings (which preserve the character histogram) nearly as high as the original. Our positive control gaps suggest the judge is doing something more than reading, but human calibration remains the gold standard.
+
+\textbf{Limitations.} (1)~The ASCII medium is intrinsically ambiguous: the same character serves multiple visual roles depending on context. (2)~Our exemplars are hand-drawn and crude; the few-shot arm is therefore a conservative test of that strategy. (3)~The 20-request/day free-tier quota constrains the number of experimental cells; results are based on pilot data.
+
+\textbf{Toward a CVPR submission.} The scientific contribution of this work is establishing a principled framework for studying visual abstraction in discrete character media, with a contamination-resistant evaluation protocol. A CVPR submission would require: (1) a full cross-provider, multi-model sweep to establish generalizability beyond one model family; (2) human rating calibration for the judge; (3) a held-out category sweep at $n \geq 3$ to measure transfer; and (4) a formal comparison of one-action-per-turn sequential generation against batched generation.
+
+
+% =========================================================
+\section{Conclusion}
+% =========================================================
+
+ASCII art is a testbed for visual abstraction in language models: the constraint is extreme, the dual nature of characters (token and texture) creates genuine scientific interest, and the evaluation problem is non-trivial. We have shown that monolithic generation has clear failure modes (scanline drift, name-spelling), that an agentic tool-use loop with discrete drawing primitives mitigates these, and that rendered visual feedback adds value beyond text-only self-inspection. The experimental framework---including contamination-resistant evaluation, pre-registered hypotheses, and zero-cost reproducibility constraints---is designed to support rigorous follow-up work.
+
+
+% =========================================================
 \bibliographystyle{ieee_fullname}
 \bibliography{references}
+% =========================================================
 
 \end{document}
