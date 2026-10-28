@@ -1,0 +1,51 @@
+a. Parts of the bear:
+   - Ears: Rows 4-6, Cols 34-35 and 41-42.
+   - Head: Rows 6-11, Cols 33-44.
+   - Snout/Nose: Rows 9-11, Cols 43-46.
+   - Shoulder Hump: Rows 5-8, Cols 20-32.
+   - Main Body/Back: Rows 8-17, Cols 10-36.
+   - Front Legs: Rows 17-23, Cols 28-33.
+   - Back Legs: Rows 17-23, Cols 12-17.
+   - Tail: Rows 11-13, Cols 8-10.
+
+b. Coordinates:
+   - Ears: rows 4-6, cols 34-42.
+   - Head: rows 6-12, cols 33-46.
+   - Body/Hump: rows 5-18, cols 10-36.
+   - Legs: rows 17-23, cols 11-34.
+   - Tail: rows 11-13, cols 8-10.
+
+c. Characters:
+   - Verticals: `|`
+   - Horizontals: `-` and `_`
+   - Right-leaning diagonal: `\`
+   - Left-leaning diagonal: `/`
+   - Eyes/Nose: `o` and `V`
+   - Paws: `"`
+
+```
+                                                
+                                                
+                                                
+                  _   _                         
+                 / \ / \                        
+              _  | | | |                        
+            _/ \_| |_| |_                       
+          _/             \                      
+         /                \                     
+    _   /      _           \____                
+  _| |_/      / \               \               
+ |     \_____/   \      o    o   |              
+ |              /                 \             
+ \_            /        _          \            
+   \          /         \V/         |           
+    |        |        _______      /            
+    |         \______/       \____/             
+    |                               \           
+    |    ____            ____        |          
+    |   |    |          |    |       |          
+    |   |    |          |    |       |          
+    |   |    |          |    |       |          
+    |___|    |___       |____|       |          
+    ""           ""     ""           ""         
+```

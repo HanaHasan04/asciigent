@@ -1,0 +1,53 @@
+Step 1 -- plan:
+a. List of parts:
+   - Ears: Pointed structures at the top of the head.
+   - Head: Rounded upper section containing eyes, nose, and whiskers.
+   - Eyes: Circular features on the face.
+   - Nose and Mouth: Small central features below the eyes.
+   - Whiskers: Long horizontal lines extending from the cheeks.
+   - Body: Large central mass representing a sitting posture.
+   - Tail: Long, curved appendage extending from the rear side.
+   - Paws: Bottom-most contact points on the ground.
+
+b. Part locations:
+   - Ears: rows 2-4, cols 16-20 (left) and 28-32 (right).
+   - Head: rows 5-10, cols 14-34.
+   - Eyes: row 7, cols 19-20 and 28-29.
+   - Nose/Mouth: row 8, col 24; row 9, cols 23-25.
+   - Whiskers: rows 7-9, cols 6-13 and 35-42.
+   - Body: rows 11-21, cols 12-36.
+   - Tail: rows 16-22, cols 37-46.
+   - Paws/Feet: rows 22-23, cols 14-34.
+
+c. Characters:
+   - Verticals: `|`
+   - Horizontals: `_`, `-`, `~`
+   - Diagonals: `/`, `\`
+   - Details: `o` for eyes, `v` for nose, `=` for whiskers, `(` and `)` for curves.
+
+Step 2 -- draw it:
+
+```
+                /\                /\
+               /  \              /  \
+              /    \____________/    \
+             |                        |
+            /   (o)              (o)   \
+      ======|            vv            |======
+            \          \____/          /
+             \________________________/
+             /                        \
+            /                          \
+           /                            \
+          |                              |
+          |                              |
+          |                              |      _
+          |                              |     / \
+          |                              |    |   |
+          |                              |____|   |
+          |                                       |
+           \            ______            _______/
+            \          /      \          /
+             \________/        \________/
+              (ww  ww)          (ww  ww)
+```

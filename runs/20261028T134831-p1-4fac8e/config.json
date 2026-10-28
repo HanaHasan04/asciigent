@@ -1,0 +1,25 @@
+{
+  "phase": "p1",
+  "category": "cat",
+  "split": "seen",
+  "arm": "zero_shot",
+  "sample": 0,
+  "model": "gemini-3-flash-preview",
+  "effort": null,
+  "render_style": {
+    "font_size": 16,
+    "padding": 8,
+    "fg": [
+      0,
+      0,
+      0
+    ],
+    "bg": [
+      255,
+      255,
+      255
+    ],
+    "font_path": "C:\\Windows\\Fonts\\consola.ttf",
+    "line_gap": 0
+  }
+}

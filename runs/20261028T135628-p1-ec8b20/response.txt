@@ -1,0 +1,51 @@
+Step 1 -- plan:
+a. I will draw a dog in profile, facing right. The parts included are:
+   - Ears: rows 3-6, cols 26-29 and 32-35.
+   - Head: rows 6-10, cols 27-36.
+   - Snout and Nose: rows 9-11, cols 36-41.
+   - Neck: rows 10-12, cols 28-33.
+   - Body (Torso): rows 12-18, cols 12-34.
+   - Tail: rows 10-14, cols 5-12.
+   - Four Legs: rows 18-23; Front legs at cols 28-34, Back legs at cols 12-18.
+
+b. Extents:
+   - Tail: rows 10-14, cols 5-12
+   - Torso: rows 12-18, cols 12-34
+   - Front Legs: rows 18-23, cols 27-33
+   - Back Legs: rows 18-23, cols 12-18
+   - Head/Neck: rows 3-11, cols 26-41
+
+c. Character Mapping:
+   - Verticals: `|`
+   - Horizontals: `-` and `_`
+   - Diagonals: `/` and `\`
+   - Curves/Edges: `(` and `)`
+   - Features: `o` for eye, `V` for nose, `"` for paws.
+
+Step 2 -- draw:
+
+```
+                          / \  / \
+                         |   ||   |
+                         |   ||   |
+                         |   ||   |
+                ________/          \
+               / o                  \
+    (\__/)    /        _______       |
+     \    \__/        /       \  V  /
+      \              /         \___/
+       \  __________/          /
+        \/          \         /
+        |            \_______/
+        |                    |
+        |                    |
+        |    ____     ____   |
+        |   /    \   /    \  |
+        |  |      | |      | |
+        |__|      |_|      |_|
+        |  |      | |      | |
+        |  |      | |      | |
+        |  |      | |      | |
+       /____\    /____\   /____\
+       "    "    "    "   "    "
+```

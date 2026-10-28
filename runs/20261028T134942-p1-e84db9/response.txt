@@ -1,0 +1,23 @@
+A cat will be drawn sitting and facing forward, with its tail curled to the side.
+
+a. Parts:
+   - Ears: rows 2-4, cols 18-32.
+   - Head: rows 5-10, cols 16-34.
+   - Eyes: row 6, cols 20-30.
+   - Nose and Mouth: rows 7-8, cols 22-28.
+   - Whiskers: rows 7-8, cols 10-15 and 35-40.
+   - Body: rows 11-21, cols 13-35.
+   - Paws: row 22, cols 12-31.
+   - Tail: rows 14-23, cols 37-46.
+
+b. Characters:
+   - Verticals: `|` for the sides of the head, body, and legs.
+   - Horizontals: `_` and `-` for the tops of the head, paws, and tail.
+   - Diagonals: `/` and `\` for the ears, chin, shoulders, and tail curves.
+   - Face: `(O)` for eyes, `^` for the nose, and `w` for the mouth.
+   - Whiskers: `=` for the long facial hair.
+
+```
+
+                   /|   |\
+                  / |

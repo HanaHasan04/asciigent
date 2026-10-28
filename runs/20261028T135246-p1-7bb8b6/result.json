@@ -1,0 +1,30 @@
+{
+  "run_id": "20261028T135246-p1-7bb8b6",
+  "elapsed_s": 30.372,
+  "phase": "p1",
+  "category": "bear",
+  "split": "seen",
+  "arm": "few_shot",
+  "sample": 0,
+  "model": "gemini-3-flash-preview",
+  "effort": null,
+  "parse_clean": true,
+  "parse_issues": [],
+  "bbox": [
+    0,
+    9,
+    17,
+    33
+  ],
+  "digest": "61d60f1f10bc",
+  "cached": false,
+  "cost_usd": 0.0,
+  "truncated": false,
+  "empty_response": false,
+  "ink_ratio": 0.0816,
+  "coverage": 0.3906,
+  "char_entropy": 2.7265,
+  "distinct_chars": 10,
+  "spells_name": false,
+  "degenerate": false
+}

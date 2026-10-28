@@ -1,58 +1,54 @@
-\documentclass[10pt,twocolumn,letterpaper]{article}
+\documentclass[10pt,twocolumn]{article}
 
-% ---- Layout & Typography ----
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[top=1.4cm, bottom=1.4cm, left=1.5cm, right=1.5cm]{geometry}
-\usepackage{times}
-\usepackage{graphicx}
-\usepackage{amsmath,amssymb}
-\usepackage{booktabs}
+\usepackage[margin=0.58in, top=0.55in, bottom=0.58in]{geometry}
+\usepackage{mathptmx}
 \usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{xcolor}
 \usepackage{hyperref}
-\usepackage{cite}
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{enumitem}
 \usepackage{titlesec}
 
-% Ensure figures are discovered whether compiled from root or report directory
-\graphicspath{{figures/}{./figures/}{../figures/}{./}}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=green!50!black,
+    urlcolor=blue!70!black
+}
 
-\titlespacing*{\section}{0pt}{3pt plus 1pt minus 1pt}{1.5pt plus 1pt minus 1pt}
-\titlespacing*{\subsection}{0pt}{2pt plus 1pt minus 1pt}{1pt plus 1pt minus 1pt}
+\captionsetup{font=footnotesize, labelfont=bf, skip=3pt}
+\setlist[itemize]{noitemsep, topsep=2pt, leftmargin=1.3em}
+\setlist[enumerate]{noitemsep, topsep=2pt, leftmargin=1.4em}
 
-\setlist{noitemsep,topsep=1pt,parsep=0pt,partopsep=0pt}
-\captionsetup{font=small,labelfont=bf,skip=2pt}
+\titlespacing*{\section}{0pt}{1.4ex plus 0.4ex minus .2ex}{0.7ex plus .1ex}
+\titlespacing*{\subsection}{0pt}{1.0ex plus 0.3ex minus .1ex}{0.5ex plus .1ex}
 
-% Float parameters to prevent trailing float pages
-\renewcommand{\topfraction}{0.95}
-\renewcommand{\bottomfraction}{0.95}
-\renewcommand{\textfraction}{0.05}
-\renewcommand{\floatpagefraction}{0.85}
-\renewcommand{\dbltopfraction}{0.95}
-\renewcommand{\dblfloatpagefraction}{0.85}
-\setlength{\textfloatsep}{4pt plus 1pt minus 1pt}
-\setlength{\dbltextfloatsep}{4pt plus 1pt minus 1pt}
-\setlength{\intextsep}{3pt plus 1pt minus 1pt}
-\setlength{\abovecaptionskip}{2pt}
-\setlength{\belowcaptionskip}{0pt}
+\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
+\setlength{\floatsep}{5pt plus 2pt minus 2pt}
+\setlength{\intextsep}{5pt plus 2pt minus 2pt}
 
-% ---- Title & Authors ----
-\title{\vspace{-0.5cm}\textbf{\Large ASCIIgent: Agentic ASCII Art Generation}\vspace{-0.2cm}}
+\title{\vspace{-1.4em}\Large\textbf{ASCIIgent: Agentic ASCII Art Generation}\vspace{-0.4em}}
 
 \author{
-  Hana Hasan \qquad Amit Arad \qquad Roei Levi \qquad Tom Shur
+  \normalsize Hana Hasan \qquad Amit Arad \qquad Roei Levi \qquad Tom Shur
 }
-\date{\vspace{-0.6cm}}
+\date{\vspace{-1.6em}}
 
 \begin{document}
+
 \maketitle
 
-% =========================================================
 \begin{abstract}
-% =========================================================
-Visual abstraction is the process of discarding redundant low-level visual data---textures, photometrics, and uninformative pixel noise---and re-encoding semantic structures into a reduced, symbolic visual language. While recent advances in neural sketch synthesis like SketchAgent demonstrate that vision-language models (VLMs) can synthesize continuous vector strokes, we investigate whether this spatial capacity extends to a fundamentally more constrained and discrete medium: \textbf{ASCII art}. In ASCII art, a model must convey recognizable silhouettes using exactly 95 printable characters on a fixed $24 \times 48$ monospace grid. Characters here serve a dual role: simultaneously functioning as language tokens and spatial micro-primitives. This dichotomy introduces a core question: do autoregressive models draw through spatial reasoning or pure textual memorization, and does active visual perception enable meaningful self-correction? We introduce \textbf{ASCIIgent}, a training-free framework evaluating monolithic prompting baselines, agentic discrete tool-use loops, and multimodal visual feedback. Evaluating against structure-destroying scrambled controls to mitigate the text-reading bias of VLM judges, we reveal characteristic failure modes of monolithic generation (scanline drift, lexical leakage) and prove that intermediate visual feedback is essential for grounded spatial refinement, localized editing, and coherent keyframe animation.
+\noindent
+Visual abstraction is the process of discarding redundant low-level visual data---textures, photometrics, and uninformative pixel noise---and re-encoding semantic structures into a reduced, symbolic visual language. While recent advances in neural sketch synthesis like SketchAgent demonstrate that vision-language models (VLMs) can synthesize continuous vector strokes, we investigate whether this spatial capacity extends to a fundamentally more constrained and discrete medium: \textbf{ASCII art}. In ASCII art, a model must convey recognizable silhouettes using printable characters on a fixed-size monospace character grid. Characters here serve a dual role: simultaneously functioning as language tokens and spatial micro-primitives. This dichotomy introduces a core question: do autoregressive models draw through spatial reasoning or pure textual memorization, and does active visual perception enable meaningful self-correction? We introduce \textbf{ASCIIgent}, a training-free framework evaluating monolithic prompting baselines, agentic discrete tool-use loops, and multimodal visual feedback across Gemini family models (\texttt{gemini-3-flash-preview} and \texttt{gemini-3.1-flash-lite}). Evaluating against structure-destroying scrambled controls to mitigate the text-reading bias of VLM judges, we reveal characteristic failure modes of monolithic generation (scanline drift, lexical leakage) and show that iterative visual feedback enables grounded spatial refinement, localized editing, and frame-consistent animation.
 \end{abstract}
 
 % =========================================================
@@ -60,165 +56,161 @@ Visual abstraction is the process of discarding redundant low-level visual data-
 % =========================================================
 
 \textbf{Visual Abstraction and Agentic Sketching.}
-Visual abstraction is a core capability of biological and computational visual perception~\cite{hertzmann2020line}. Neural stroke models pioneered recurrent drawing representations~\cite{ha2017neural}, which later advanced toward semantic vector sketching~\cite{vinker2022clipasso}. Most recently, \textbf{SketchAgent}~\cite{vinker2025sketchagent} formalized sketch generation as a continuous perception--reasoning--action loop: a frozen multimodal LLM iteratively emits Bézier stroke control points, inspects the updated rasterized canvas, and refines the drawing. Concurrently, \textbf{VideoSketcher}~\cite{ren2025videosketcher} demonstrated that dynamic sketching can be decomposed into an LLM-guided high-level structural plan coupled with diffusion priors. We adapt and generalize this agentic paradigm to discrete character media.
+Visual abstraction is a foundational capability of biological and computational perception~\cite{hertzmann2020line}. Neural stroke models pioneered recurrent drawing representations~\cite{ha2017neural}, later advancing toward semantic vector sketching~\cite{vinker2022clipasso}. Recently, \textbf{SketchAgent}~\cite{vinker2025sketchagent} formalized sketch generation as a continuous perception--reasoning--action loop: a frozen multimodal LLM iteratively emits B\'{e}zier stroke control points, inspects the updated rasterized canvas, and refines the drawing. Concurrently, \textbf{VideoSketcher}~\cite{ren2025videosketcher} demonstrated that dynamic sketching can be decomposed into an LLM-guided structural plan coupled with video diffusion priors. We adapt and generalize this agentic paradigm to discrete character media.
 
 \textbf{The ASCII Art Medium and its Challenges.}
-ASCII art presents a uniquely rigid constraint: characters must occupy fixed coordinates in a monospace grid $\Sigma^{24 \times 48}$. Unlike continuous splines, characters possess discrete geometry: a forward slash \texttt{/} acts as a $45^{\circ}$ line segment, an at-sign \texttt{@} acts as a dense tonal patch, and a period \texttt{.} functions as point stippling. Monolithic autoregressive generation suffers from \textbf{scanline drift}: generating left-to-right, top-to-bottom forces the model to commit to features at row 2 that must align with geometry at row 22 hundreds of tokens later without intermediate visual verification or backtracking. Public archives like \texttt{asciiart.eu}~\cite{asciiart_archive} document decades of human designs, which language models have internalized during pretraining.
+ASCII art imposes a strict spatial constraint: characters must occupy fixed coordinates in a monospace grid $\Sigma^{H \times W}$. Unlike continuous splines, characters possess fixed discrete geometry: a forward slash \texttt{/} acts as a $45^\circ$ line segment, an at-sign \texttt{@} acts as a dense tonal patch, and a period \texttt{.} functions as point stippling. Monolithic autoregressive generation suffers from \textbf{scanline drift}: generating left-to-right, top-to-bottom forces the model to commit to features in early rows that must align with geometry hundreds of tokens later without visual verification or backtracking. Public archives like \texttt{asciiart.eu}~\cite{asciiart_archive} document decades of human designs that language models have partially memorized during pretraining.
 
 \textbf{The VLM Evaluation Confound.}
-Evaluating ASCII art with multimodal models introduces a severe confounding factor: as shown by Wang et al.~\cite{wang2025textspeaks} and ASCIIBench~\cite{luo2025asciibench}, VLMs systematically suffer from text bias, recognizing concepts by reading characters rather than perceiving shapes. Our evaluation incorporates rigorous scrambled controls ($\textit{scramble-cells}$ and $\textit{scramble-ink}$) to isolate genuine visual recognizability.
+Evaluating ASCII art with multimodal models introduces a severe confounding factor: as shown by Wang et al.~\cite{wang2025textspeaks} and ASCIIBench~\cite{luo2025asciibench}, VLMs systematically suffer from text bias, recognizing concepts by reading character sequences rather than perceiving geometric shapes. Our evaluation incorporates structure-destroying scrambled controls (\emph{scramble-cells} and \emph{scramble-ink}) to isolate genuine visual recognizability.
 
 % =========================================================
 \section{Methodology}
 % =========================================================
 
 \subsection{Canvas Representation and Format Contract}
-The drawing canvas is defined as $C \in \Sigma^{H \times W}$ ($H=24$, $W=48$, $|\Sigma|=95$). Monospace rasterization $\mathcal{R}: \Sigma^{H \times W} \to \mathbb{R}^{H' \times W' \times 3}$ renders glyphs at exact pixel offsets without font kerning. The system enforces strict parsing: canvas overflows or non-ASCII escapes are flagged in a \texttt{ParseReport} and treated as structural defects.
-
-\subsection{One-Shot Generation Baselines (P1)}
-We evaluate three controlled one-shot prompting strategies across seen and held-out categories:
-\begin{enumerate}
-  \item \textbf{Zero-Shot:} Direct instruction: ``Draw a \{category\} on the $24 \times 48$ canvas.''
-  \item \textbf{Few-Shot:} Same prompt preceded by four structurally diverse exemplar categories (\texttt{fish}, \texttt{house}, \texttt{tree}, \texttt{sailboat}) strictly disjoint from test categories.
-  \item \textbf{Procedural (CoT):} The model explicitly plans the object's decomposition, bounding coordinates, and glyph selections in structured prose before emitting the grid.
-\end{enumerate}
-
-\subsection{Agentic Generation via Visual Feedback (P2)}
-Instead of monolithic emission, ASCIIgent interacts with an \texttt{AsciiCanvas} through a discrete spatial action vocabulary:
-\begin{itemize}
-  \item \texttt{draw\_line}$(r_1, c_1, r_2, c_2, \textit{char})$: Bresenham line interpolation with automatic directional glyph selection.
-  \item \texttt{draw\_rect}$(t, l, b, r, \textit{border}, \textit{fill})$: Axis-aligned bounding box.
-  \item \texttt{shade\_density}$(t, l, b, r, \ell)$: Tonal fill from an ordered density ramp: \texttt{' '} $<$ \texttt{'.'} $<$ \texttt{':'} $<$ \texttt{'-'} $<$ \texttt{'='} $<$ \texttt{'+'} $<$ \texttt{'*'} $<$ \texttt{'\#'} $<$ \texttt{'\%'} $<$ \texttt{'@'}.
-  \item \texttt{patch\_edit}$(r, c, \textit{lines})$: In-place localized subgrid overwrite.
-  \item \texttt{erase\_rect}$(t, l, b, r)$: Region clearing.
-  \item \texttt{finish}: Session termination.
-\end{itemize}
-
-\textbf{Feedback Ablation.} At the end of each turn, the canvas state is processed under three conditions: (1) \textbf{Visual (Ours):} rendered to a bitmap PNG and injected into the model's visual context; (2) \textbf{Text-Only:} presented as a raw character matrix; (3) \textbf{No-Feedback:} blind iteration without state representation.
+We define the drawing canvas as a fixed character matrix $C \in \Sigma^{H \times W}$ with $H=24$ rows, $W=48$ columns, and printable ASCII alphabet $|\Sigma|=95$ (codepoints 32--126). Deterministic monospace rasterization $\mathcal{R}: \Sigma^{24 \times 48} \to \mathbb{R}^{H' \times W' \times 3}$ renders glyphs at exact cell offsets without font kerning. Every model response is validated by a strict parser: row/column overflows or missing code fences are repaired and logged in a \texttt{ParseReport}.
 
 \begin{figure*}[!t]
   \centering
-  \includegraphics[width=0.92\linewidth, height=4.8cm, keepaspectratio]{figures/p1_contact_sheet.png}
-  \vspace{-2pt}
-  \caption{\textbf{P1 Baseline Contact Sheet (12 Cells).} Full comparison across four categories (Cat, Dog, Bear, Horse) and three prompting arms (Zero-Shot, Few-Shot, Procedural CoT). Few-shot prompting enriches stroke density; procedural prompting encourages explicit planning but exposes failure modes such as lexical leakage (e.g. spelling ``HORSE'' inside the canvas).}
+  \includegraphics[width=0.90\linewidth, height=4.5cm, keepaspectratio]{figures/p1_contact_sheet.png}
+  \vspace{-3pt}
+  \caption{\textbf{P1 One-Shot Baseline Contact Sheet (12 Cells, Model: \texttt{gemini-3-flash-preview}).} Columns show the four target categories (\texttt{cat}, \texttt{dog}, \texttt{bear}, \texttt{horse}); rows show the three prompting arms. Zero-shot produces recognizable silhouettes but occasionally drifts across the 48-column right boundary (e.g., \texttt{horse}); few-shot regularizes scale and centering; procedural CoT (with bounded thinking effort) yields rich anatomical structure such as paws, manes, and hooves.}
   \label{fig:contact_sheet}
 \end{figure*}
 
-\subsection{Evaluation Protocol (P3)}
-To avoid subjective or text-contaminated assessments, our evaluation relies on three pillars:
+\subsection{One-Shot Generation Baselines (P1)}
+We evaluate three one-shot prompting strategies across four target categories (\texttt{cat}, \texttt{dog}, \texttt{bear}, \texttt{horse}) and two Gemini family models (\texttt{gemini-3-flash-preview} and \texttt{gemini-3.1-flash-lite}):
 \begin{enumerate}
-  \item \textbf{Structural Metrics:} Ink ratio $\rho$ (density of non-blank glyphs), coverage (bounding box fraction), Shannon character entropy $H = -\sum p_i \log_2 p_i$, and automated flags: \texttt{spells\_name} and \texttt{degenerate}.
-  \item \textbf{VLM Image-vs-Text Judge:} Dual independent queries to a frozen multimodal judge: unprompted open identification (``What does this picture depict?''), followed by a 1--5 semantic rating.
-  \item \textbf{Scrambled Controls \& Control Gap:} For every drawing, we evaluate two controls: $\textit{scramble-cells}$ (uniform glyph shuffling destroying geometry) and $\textit{scramble-ink}$ (shuffling non-blank glyphs within the silhouette mask). The primary metric is the \textbf{Control Gap}:
-  \begin{equation}
-    \Delta = S_{\text{real}} - \max(S_{\text{cells}}, S_{\text{ink}})
-  \end{equation}
-  A positive gap $\Delta > 0$ validates genuine visual recognizability beyond lexical or density artifacts.
+  \item \textbf{Zero-Shot:} Direct instruction: ``Draw a \{category\} on the $24 \times 48$ canvas.''
+  \item \textbf{Few-Shot:} Same prompt preceded by four hand-crafted exemplar categories (\texttt{fish}, \texttt{house}, \texttt{tree}, \texttt{sailboat}) strictly disjoint from test categories to prevent direct template copying.
+  \item \textbf{Procedural (CoT):} The model writes a structured 3-step spatial plan (major parts, row/column bounding regions, and contour glyph choices) before emitting the fenced $24 \times 48$ grid.
+\end{enumerate}
+
+\subsection{Agentic Loop and Turn Protocol (P2)}
+Instead of emitting all $24 \times 48$ characters monolithically, ASCIIgent interacts with an \texttt{AsciiCanvas} over a multi-turn loop with a budget of $T_{\max} = 3$ turns. In each turn $t \in \{1, 2, 3\}$, the agent emits a JSON batch of multiple discrete tool calls:
+\begin{itemize}
+  \item \texttt{patch\_edit}$(r, c, \textit{lines})$: Localized subgrid overwrite at 0-indexed $(r, c)$ where alignment spaces preserve underlying ink.
+  \item \texttt{draw\_line}$(r_1, c_1, r_2, c_2, \textit{char})$ \& \texttt{draw\_rect}$(t, l, b, r, \textit{border}, \textit{fill})$: Bresenham line and box primitives.
+  \item \texttt{shade\_density}$(t, l, b, r, \ell)$ \& \texttt{erase\_rect}$(t, l, b, r)$: Tonal fill (\texttt{' '} $<$ \texttt{'.'} $<$ \texttt{':'} $<$ \texttt{'-'} $<$ \texttt{'='} $<$ \texttt{'+'} $<$ \texttt{'*'} $<$ \texttt{'\#'} $<$ \texttt{'\%'} $<$ \texttt{'@'}) and clearing.
+  \item \texttt{finish}: Early termination when the drawing is complete.
+\end{itemize}
+
+\textbf{Why 3 Turns \& What Happens Per Turn.}
+A 3-turn budget mirrors a coarse-to-fine artistic workflow while bounding API latency: \textbf{Turn 1} drafts the coarse outer silhouette and primary facial landmarks from the text prompt; after Turn 1, the canvas is rasterized to a PNG bitmap and paired with a 2-digit row/column coordinate ruler; in \textbf{Turn 2}, the VLM inspects the rendered image, critiques missing anatomy, and issues \texttt{patch\_edit} calls to add limbs and facial features; in \textbf{Turn 3}, the VLM performs a final visual verification to add fine secondary details (e.g., collar and tail) before calling \texttt{finish}. To isolate the role of vision, we ablate three feedback modes between turns: (1) \textbf{Visual (Ours):} rendered PNG bitmap + 2-digit coordinate grid; (2) \textbf{Text-Only:} raw character text without the rendered image; and (3) \textbf{No-Feedback:} blind multi-turn continuation without intermediate state.
+
+\subsection{Evaluation Protocol (P3)}
+Our evaluation combines three complementary pillars:
+\begin{enumerate}
+  \item \textbf{Structural Metrics:} Ink ratio $\rho$ (non-blank fraction), bounding-box coverage, Shannon character entropy $H = -\sum p_i \log_2 p_i$, distinct glyph count, and automated defect flags (\texttt{spells\_name} for lexical leakage and \texttt{degenerate}).
+  \item \textbf{VLM Image-vs-Text Judge:} Dual independent queries to a frozen multimodal judge (\texttt{gemini-3.1-flash-lite}): unprompted open identification (``What does this picture depict?'') followed by a 1--5 visual quality rating.
+  \item \textbf{Scrambled Controls \& Control Gap:} Every drawing is compared against \emph{scramble-cells} (uniform permutation over the $24 \times 48$ grid) and \emph{scramble-ink} (permutation of non-blank glyphs within the silhouette mask). The \textbf{Control Gap} $\Delta = S_{\text{real}} - \max(S_{\text{cells}}, S_{\text{ink}})$ confirms genuine geometric recognizability when $\Delta > 0$.
 \end{enumerate}
 
 % =========================================================
 \section{Experiments and Results}
 % =========================================================
 
-\subsection{P1 Baseline Performance and Failure Modes}
-Table~\ref{tab:p1} reports the structural analysis across all 12 cells of the seen split. All outputs achieved 100\% format contract validity.
+\subsection{P1 Baselines and Multi-Model Comparison}
+Table~\ref{tab:p1} reports the per-cell structural metrics for \texttt{gemini-3-flash-preview} (visualized in Figure~\ref{fig:contact_sheet}) alongside the multi-model comparison against \texttt{gemini-3.1-flash-lite}. Two key findings emerge:
 \begin{itemize}
-  \item \textbf{Failure Mode 1: Lexical Leakage.} In the procedural \texttt{horse} cell, the model cheated by spelling the word ``HORSE'' across the torso (\texttt{spells\_name} = True). A pure text judge falsely rewards this; our scrambled control yields $\Delta = 0.000$, correctly detecting the visual failure.
-  \item \textbf{Failure Mode 2: Glyph Collapsing.} Zero-shot horse collapsed into 2 distinct characters ($H = 0.71$), whereas few-shot prompting encouraged rich typographic texture ($H = 1.61$--$2.56$).
+  \item \textbf{Model Capacity vs. Glyph Collapse and Lexical Leakage.} On the lightweight \texttt{gemini-3.1-flash-lite} model, zero-shot generation suffers from glyph collapse (e.g., \texttt{horse} collapses to 2 distinct characters, $H=0.71$; \texttt{bear} fills a block of vertical bars), and procedural \texttt{horse} cheats by spelling ``HORSE'' inside the torso (\texttt{spells\_name} = Yes, $\Delta = 0.000$). In contrast, \texttt{gemini-3-flash-preview} synthesizes recognizable animal silhouettes across all 12 cells with high character diversity ($H = 1.76$--$2.83$ bits) and zero lexical leakage.
+  \item \textbf{Reasoning Effort vs. CoT Truncation.} Because \texttt{gemini-3-flash-preview} is a thinking model that bills internal reasoning tokens against \texttt{max\_tokens}, running the verbose \texttt{procedural} arm with unbounded reasoning caused 3/4 cells to truncate mid-plan. Bounding reasoning depth (\texttt{--effort low}) eliminated truncation completely, producing the detailed procedural drawings in Figure~\ref{fig:contact_sheet} (bottom row).
 \end{itemize}
 
 \begin{table}[!t]
 \centering
-\small
-\setlength{\tabcolsep}{3.5pt}
+\scriptsize
+\setlength{\tabcolsep}{2.4pt}
 \begin{tabular}{@{}llccccc@{}}
 \toprule
-\textbf{Category} & \textbf{Arm} & $\rho$ & Cov. & $H$ (bits) & Chars & Spells? \\
+\textbf{Category} & \textbf{Arm} & $\rho$ (Ink) & Cov. & $H$ (bits) & Chars & Spells? \\
 \midrule
-Cat   & zero-shot   & 0.056 & 0.49 & 2.60 & 11 & No \\
-Cat   & few-shot    & 0.106 & 0.38 & 1.90 & 6  & No \\
-Cat   & procedural  & 0.096 & 0.53 & 1.86 & 6  & No \\
-Dog   & zero-shot   & 0.062 & 0.19 & 1.79 & 6  & No \\
-Dog   & few-shot    & 0.094 & 0.42 & 1.89 & 5  & No \\
-Dog   & procedural  & 0.097 & 0.38 & 2.41 & 8  & No \\
-Bear  & zero-shot   & 0.189 & 0.67 & 1.75 & 6  & No \\
-Bear  & few-shot    & 0.144 & 0.55 & 2.56 & 10 & No \\
-Bear  & procedural  & 0.097 & 0.50 & 0.73 & 6  & No \\
-Horse & zero-shot   & 0.063 & 0.63 & 0.71 & 2  & No \\
-Horse & few-shot    & 0.106 & 0.40 & 1.61 & 5  & No \\
-Horse & procedural  & 0.096 & 0.59 & 2.45 & 12 & \textbf{Yes} \\
+\multicolumn{7}{@{}l}{\textit{Per-Cell Results: \texttt{gemini-3-flash-preview} (Figure~\ref{fig:contact_sheet})}} \\
+Cat   & zero-shot   & 0.158 & 0.78 & 2.28 & 8  & No \\
+Cat   & few-shot    & 0.055 & 0.24 & 2.83 & 11 & No \\
+Cat   & procedural  & 0.138 & 0.80 & 2.52 & 10 & No \\
+Dog   & zero-shot   & 0.102 & 0.33 & 2.31 & 7  & No \\
+Dog   & few-shot    & 0.058 & 0.20 & 2.58 & 8  & No \\
+Dog   & procedural  & 0.143 & 0.68 & 2.15 & 9  & No \\
+Bear  & zero-shot   & 0.113 & 0.46 & 2.56 & 10 & No \\
+Bear  & few-shot    & 0.082 & 0.39 & 2.73 & 10 & No \\
+Bear  & procedural  & 0.128 & 0.69 & 2.13 & 7  & No \\
+Horse & zero-shot   & 0.098 & 0.61 & 1.92 & 7  & No \\
+Horse & few-shot    & 0.152 & 0.67 & 1.76 & 5  & No \\
+Horse & procedural  & 0.158 & 0.76 & 2.21 & 8  & No \\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Multi-Model Summary Across All 12 Seen Cells (Mean $\pm$ SD)}} \\
+\multicolumn{2}{@{}l}{\texttt{gemini-3-flash-preview}} & $.115 \pm .036$ & $.55 \pm .22$ & $\mathbf{2.33 \pm .32}$ & $\mathbf{8.3 \pm 1.7}$ & \textbf{0/12} \\
+\multicolumn{2}{@{}l}{\texttt{gemini-3.1-flash-lite}}  & $.100 \pm .038$ & $.48 \pm .13$ & $1.86 \pm .63$ & $7.0 \pm 2.9$ & 1/12 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Quantitative Structural Metrics across P1 Cells.} Model: Gemini 3.1 Flash-Lite. All runs parse cleanly. Procedural horse demonstrates severe lexical contamination.}
+\caption{\textbf{P1 Structural Metrics and Multi-Model Comparison.} \texttt{gemini-3-flash-preview} achieves higher character entropy and zero lexical leakage across all 12 cells compared to \texttt{gemini-3.1-flash-lite}.}
 \label{tab:p1}
 \end{table}
 
 \begin{figure}[!t]
   \centering
-  \includegraphics[width=\linewidth]{figures/fig3_feedback_ablation.png}
-  \caption{\textbf{Feedback Mode Ablation (P2).} Left: No-feedback (blind) overwrites the nose and places floating disconnected feet/tail. Center: Text-only self-critique suffers from coordinate misalignment, superimposing a second face over the first. Right: Active visual perception (ours) grounds edits to synthesize a coherent cat with whiskers, collar, paws, and tail.}
-  \label{fig:ablation}
-\end{figure}
-
-\subsection{P2: Agentic Synthesis and Visual Grounding}
-As shown in Figure~\ref{fig:agentic_turns}, the agentic system constructs subjects iteratively through our $\text{draft} \to \text{render} \to \text{perceive} \to \text{revise}$ loop. In Turn 1, the model drafts the outer head and torso silhouette. Inspecting the rendered bitmap in Turn 2, the agent identifies missing facial features and limbs, adding symmetric whiskers and seated front paws. In Turn 3, visual inspection guides the addition of a bell collar and curled tail. Without visual perception (Figure~\ref{fig:ablation}), multi-turn edits suffer from severe spatial drift and coordinate collisions.
-
-\begin{figure}[!t]
-  \centering
   \includegraphics[width=\linewidth]{figures/fig2_agentic_turns.png}
-  \caption{\textbf{Agentic Self-Perception Progression (P2).} Turn 1: Initial silhouette draft. Turn 2: Visual critique adds symmetric whiskers and front paws. Turn 3: Final refinement adds collar and curled tail.}
+  \caption{\textbf{P2 Agentic Self-Perception Progression (Target: \texttt{cat}, Model: \texttt{gemini-3.1-flash-lite}).} Turn 1 drafts the head and torso silhouette. Inspecting the rendered PNG in Turn 2 guides localized \texttt{patch\_edit} calls for symmetric whiskers and seated front paws. Turn 3 adds a bell collar and curled tail.}
   \label{fig:agentic_turns}
 \end{figure}
 
-\subsection{P3: CLIP Evaluation and Judge Calibration}
-Evaluating with local CLIP ViT-B/32 against target text prompts confirms that agentic visual generation produces meaningful visual signals: \texttt{cat} achieved CLIP cosine similarity of 0.2947 vs. 0.2880 scrambled ($\Delta = +0.0067$); \texttt{bear} achieved 0.3044 vs. 0.2752 ($\Delta = +0.0293$). The dual text-vs-image judge experiment demonstrated that when evaluating purely on the rendered bitmap, the VLM judge assigned a score of 5/5 without text leakage.
-
-\subsection{Extensions: Editing, Photography, Animation}
-
-\textbf{P4: Conversational Editing.} Given a natural language request (``Add a pointy party hat with a star on top of the head''), the model issued a localized \texttt{patch\_edit} targeting rows 1--4 centered at column 18. Exactly 15 cells were modified directly above the head between the ears, leaving rows 5--23 completely untouched (Figure~\ref{fig:edit_and_anim}a).
-
-\textbf{P5: Semantic Image-to-ASCII.} Conditioning directly on a photograph, the agent extracted structural contours into a sparse $24 \times 48$ representation ($\rho = 0.143$), filtering complex textures while retaining semantic identity.
-
-\textbf{P6: Keyframe Animation.} Rather than regenerating the entire grid per frame (which causes body drift), our animation loop applies localized \texttt{patch\_edit} deltas onto the base keyframe. This guarantees 100\% frame-to-frame invariance of the head, torso, and limbs while smoothly animating blinking eyes (\texttt{o.o} $\to$ \texttt{-.-} $\to$ \texttt{\textasciicircum.\textasciicircum}) and a wagging tail (Figure~\ref{fig:edit_and_anim}b).
-
-\begin{figure}[!b]
+\begin{figure}[!t]
   \centering
-  \begin{subfigure}{\linewidth}
+  \includegraphics[width=\linewidth]{figures/fig3_feedback_ablation.png}
+  \caption{\textbf{P2 Feedback Mode Ablation on \texttt{cat}.} Left: \texttt{no\_feedback} (blind) overwrites the nose and places floating disconnected feet/tail. Center: \texttt{text\_only} critique misaligns row offsets, superimposing a second face over the first. Right: \texttt{visual} perception (ours) grounds every edit accurately.}
+  \label{fig:ablation}
+\end{figure}
+
+\subsection{P2: Agentic Synthesis and Feedback Ablation}
+Figure~\ref{fig:agentic_turns} illustrates the 3-turn agentic progression on \texttt{cat} using \texttt{gemini-3.1-flash-lite}. Even on the lightweight model, decomposing generation into $\text{draft} \to \text{render} \to \text{perceive} \to \text{revise}$ yields a clean, high-entropy drawing ($H = 3.17$ bits, 12 distinct chars). As shown in the Figure~\ref{fig:ablation} ablation, removing the rendered PNG causes severe spatial degradation: \texttt{no\_feedback} hallucinates disconnected limbs to the right of the body, while \texttt{text\_only} miscalculates row indices and stamps a duplicate face over the chest. Pairing the rendered PNG with the 2-digit coordinate ruler in \texttt{visual} mode eliminates both failure modes.
+
+\subsection{P3: CLIP Evaluation and Judge Calibration}
+Evaluating rendered drawings with local CLIP ViT-B/32 against text prompts (\texttt{"an ASCII art drawing of a \{category\}"}) confirms positive control gaps: \texttt{cat} achieves CLIP cosine similarity $0.2947$ vs. $0.2880$ scrambled ($\Delta = +0.0067$), and \texttt{bear} achieves $0.3044$ vs. $0.2752$ ($\Delta = +0.0293$). In our dual image-vs-text VLM judge test (\texttt{run\_judge\_text\_vs\_image.py}), the rendered PNG of the P2 \texttt{cat} is correctly identified as \texttt{"cat"} and rated $5/5$, whereas its scrambled control drops to $1/5$ ($\Delta_{\text{judge}} = +4.0$).
+
+\subsection{Unified Downstream Extensions (P4, P5, P6)}
+To ensure strict experimental continuity, both our conversational editing (P4) and keyframe animation (P6) experiments take the \textbf{exact Turn 3 \texttt{cat} canvas synthesized by our P2 agentic loop} (Figure~\ref{fig:agentic_turns}, right) as their starting base drawing:
+\begin{itemize}
+  \item \textbf{P4: Conversational Editing (Figure~\ref{fig:extensions}a).} Given the P2 \texttt{cat} canvas and the instruction \emph{``Add a pointy party hat with a star on top of the head''}, the agent inspects the rendered image and 2-digit ruler and issues a single \texttt{patch\_edit} at rows 0--2, columns 18--22 (modifying only 8 cells directly above the ears \texttt{/\_/\textbackslash} at row 3 while leaving rows 3--23 completely untouched).
+  \item \textbf{P5: Semantic Image-to-ASCII (Figure~\ref{fig:extensions}b).} Given a $320 \times 320$ shaded RGB illustration of a seated \texttt{bear} on a sky-and-foliage background (\texttt{runs/p5\_image2ascii/input\_photo.png}), the VLM suppresses background clutter and photometric gradients to extract a clean $24 \times 48$ structural contour ($\rho = 0.120$).
+  \item \textbf{P6: Delta-Patched Keyframe Animation (Figure~\ref{fig:extensions}c).} Regenerating a full $24 \times 48$ grid per frame causes body drift and limb mutation. Instead, \texttt{p6\_animate.py} initializes each frame $t$ from $\text{AsciiCanvas}(\text{base}=\text{frame}_{t-1})$ and applies only localized \texttt{patch\_edit} deltas. Starting from the P2 \texttt{cat}, the head, whiskers, collar, torso, and paws remain 100\% invariant across frames while the eyes blink (\texttt{o.o} $\to$ \texttt{-.-} $\to$ \texttt{\textasciicircum.\textasciicircum}) and the tail wags.
+\end{itemize}
+
+\begin{figure}[!t]
+  \centering
+  \begin{subfigure}{0.56\linewidth}
     \centering
-    \includegraphics[width=0.82\linewidth]{figures/fig4_conversational_edit.png}
-    \caption{\textbf{P4 Conversational Editing:} Centered party hat added via \texttt{patch\_edit} (rows 1--4) without disturbing the ears or face.}
+    \includegraphics[width=\linewidth]{figures/fig4_conversational_edit.png}
+    \caption{\textbf{P4 Edit:} +Party hat on P2 \texttt{cat}.}
+  \end{subfigure}\hfill
+  \begin{subfigure}{0.41\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/fig6_image2ascii.png}
+    \caption{\textbf{P5 Photo $\to$ ASCII} (\texttt{bear}).}
   \end{subfigure}
   \vspace{2pt}
   \begin{subfigure}{\linewidth}
     \centering
     \includegraphics[width=\linewidth]{figures/fig5_animation_strip.png}
-    \caption{\textbf{P6 Delta-Patched Keyframe Animation:} Blinking eyes and wagging tail with 100\% invariant body and limbs.}
+    \caption{\textbf{P6 Delta-Patched Animation:} Blinking eyes and wagging tail on the P2 \texttt{cat} with 100\% invariant body and limbs.}
   \end{subfigure}
-  \caption{\textbf{Downstream Extensions.} Localized editing and frame-consistent animation.}
-  \label{fig:edit_and_anim}
+  \caption{\textbf{Downstream Extensions (P4, P5, P6).} P4 and P6 operate directly on the P2 Turn 3 \texttt{cat} canvas; P5 converts an RGB image of a \texttt{bear} into semantic ASCII contours.}
+  \label{fig:extensions}
 \end{figure}
 
 % =========================================================
-\section{Discussion and Comparisons}
+\section{Discussion and Conclusion}
 % =========================================================
 
 \textbf{Comparison to SketchAgent and VideoSketcher.}
-SketchAgent~\cite{vinker2025sketchagent} operates in a continuous vector domain, outputting parametric Bézier coordinates stroke-by-stroke. In contrast, ASCIIgent operates over a \emph{discrete coordinate grid} using primitive commands (\texttt{draw\_rect}, \texttt{draw\_line}, \texttt{patch\_edit}). While SketchAgent performs single-stroke turns, ASCIIgent supports batched semantic operations followed by perceptual verification.
+Whereas SketchAgent~\cite{vinker2025sketchagent} emits continuous parametric B\'{e}zier strokes on a vector canvas, ASCIIgent operates over a \emph{discrete character grid} via batched spatial primitives (\texttt{patch\_edit}, \texttt{draw\_line}, \texttt{shade\_density}) paired with a 2-digit coordinate ruler. In VideoSketcher~\cite{ren2025videosketcher}, an LLM decomposes a drawing plan into sequential strokes that a video diffusion model animates into pen-drawing footage. Because continuous diffusion does not apply to discrete text cells, ASCIIgent realizes dynamic synthesis in two discrete ways: (1) \textbf{procedural turn playback}, replaying the logged action sequence step-by-step (\texttt{progression.gif}), and (2) \textbf{delta-patched keyframe animation} (P6), where autoregressive visual conditioning and localized \texttt{patch\_edit} operations enforce frame-to-frame body invariance.
 
-In VideoSketcher~\cite{ren2025videosketcher}, sketch animation is addressed by having an LLM decompose a drawing plan into a sequence of strokes, which a continuous video diffusion model (e.g. SVD/AnimateDiff) animates into pen-drawing footage. In discrete ASCII art, continuous stroke diffusion does not exist. However, the core conceptual insight of VideoSketcher applies directly to our framework in two distinct ways:
-\begin{enumerate}
-  \item \textbf{Drawing Process Playback:} Because ASCIIgent maintains a rigorous action history, the full drawing process can be rendered deterministically step-by-step (line by line, patch by patch), generating a discrete procedural drawing replay.
-  \item \textbf{Subject Motion Animation:} For semantic object motion, our P6 keyframe generator employs autoregressive visual conditioning: each frame is synthesized by feeding the previous rendered bitmap into the model, enforcing strict boundary invariance while modifying dynamic sub-regions.
-\end{enumerate}
+\textbf{Limitations and Future Work.}
+Free-tier API rate limits constrain sample counts per cell, and VLM coordinate grounding still benefits from explicit 2-digit row/column rulers alongside rendered bitmaps. Future work includes expanding evaluations across additional open-weights and proprietary VLMs, calibrating the scrambled control gap $\Delta$ against human perceptual studies, and incorporating tree search over candidate discrete edits.
 
-\textbf{Limitations.} Free-tier API quotas constrain large-scale multi-model sweeps. Additionally, while the control gap $\Delta > 0$ protects against text bias, full calibration against crowdsourced human ratings represents the gold standard.
-
-\textbf{Roadmap to CVPR.} Expanding this work for a formal CVPR submission requires: (1) multi-model sweeps across proprietary and open VLMs (GPT-4o, Claude 3.5 Sonnet, LLaVA-NeXT); (2) human perceptual preference benchmarks calibrating the control gap; and (3) hybrid neuro-symbolic search over discrete edit operations.
-
-% =========================================================
-\section{Conclusion}
-% =========================================================
-ASCIIgent establishes a rigorous framework for studying visual abstraction in discrete text spaces. We demonstrate that monolithic generation suffers from scanline drift and lexical contamination, while agentic discrete tool execution guided by active visual perception enables grounded refinement, localized editing, and coherent keyframe animation.
+\textbf{Conclusion.}
+ASCIIgent demonstrates that while monolithic autoregressive generation is vulnerable to scanline drift, glyph collapse, and lexical leakage, coupling a discrete spatial action vocabulary with active visual perception enables self-correcting ASCII synthesis, surgical conversational editing, semantic image-to-ASCII abstraction, and coherent keyframe animation.
 
 {\footnotesize
 \bibliographystyle{ieeetr}

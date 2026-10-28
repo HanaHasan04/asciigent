@@ -17,13 +17,13 @@ def build_p1_grid():
 
     p1_runs = {}
     for e in entries:
-        if e.get("model") == "gemini-3.1-flash-lite" and e.get("arm") in ("zero_shot", "few_shot", "procedural"):
+        if e.get("model") == "gemini-3-flash-preview" and not e.get("truncated") and e.get("arm") in ("zero_shot", "few_shot", "procedural"):
             p1_runs[(e["category"], e["arm"])] = runs_dir / e["run_id"]
 
     categories = ["cat", "dog", "bear", "horse"]
     arms = ["zero_shot", "few_shot", "procedural"]
     arm_labels = ["Zero-Shot", "Few-Shot", "Procedural"]
-    cat_labels = ["Cat", "Dog", "Bear", "Horse"]
+    cat_labels = ["Cat ('cat')", "Dog ('dog')", "Bear ('bear')", "Horse ('horse')"]
 
     images = {}
     for c in categories:
@@ -31,8 +31,6 @@ def build_p1_grid():
             rd = p1_runs.get((c, a))
             if rd and (rd / "drawing.png").exists():
                 im = Image.open(rd / "drawing.png").convert("RGB")
-                # Crop excessive empty right/bottom canvas margin so art fills each tile
-                im = im.crop((0, 0, int(im.width * 0.88), int(im.height * 0.72)))
                 images[(c, a)] = im
             else:
                 raise RuntimeError(f"Missing drawing for ({c}, {a})")

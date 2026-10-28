@@ -1,0 +1,19 @@
+Step 1 -- plan
+
+a. The horse will be drawn facing to the right. The parts included are:
+   - Ears: Two pointed shapes at the top of the head.
+   - Head: Including the forehead, an eye, and a long muzzle.
+   - Neck and Mane: A thick, sloping neck with a textured mane along the back edge.
+   - Body: A large oval-like torso with a back/spine, chest, and belly.
+   - Tail: A long, flowing tail hanging from the hindquarters.
+   - Legs: Four legs (two visible in the front, two in the back) with simple hooves.
+
+b. Coordinates for each part:
+   - Ears: rows 1-3, cols 33-37
+   - Head: rows 3-9, cols 33-46
+   - Muzzle/Nose: rows 5-9, cols 38-46
+   - Neck/Mane: rows 5-12, cols 27-37
+   - Back/Spine: rows 11-12, cols 15-32
+   - Body (Chest/Belly/Rump): rows 12-18, cols 10-40
+   - Tail: rows 12-22, cols 6-12
+   - Front Legs: rows 18-23, cols 32-37

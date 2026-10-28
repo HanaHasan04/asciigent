@@ -159,6 +159,7 @@ def main(argv: list[str] | None = None) -> int:
     run_subdir = runs_dir / "p5_image2ascii"
     run_subdir.mkdir(parents=True, exist_ok=True)
 
+    (run_subdir / "input_photo.png").write_bytes(png_bytes)
     (run_subdir / "output.txt").write_text(grid.to_text(), encoding="ascii")
     save_png(grid, str(run_subdir / "output.png"))
     (run_subdir / "response.txt").write_text(resp.text, encoding="utf-8")

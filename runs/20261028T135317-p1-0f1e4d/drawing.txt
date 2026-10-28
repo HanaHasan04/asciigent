@@ -1,0 +1,24 @@
+a. The bear will consist of the following parts:
+   - Ears: Two rounded shapes at the top of the 
+   - Head: A rounded square/oval shape containin
+   - Eyes: Two circular shapes inside the head. 
+   - Muzzle and Nose: A central area on the face
+   - Body: A large, rounded torso indicating a s
+   - Front Paws: Two smaller oval shapes resting
+   - Hind Feet: Two flat, horizontal shapes at t
+                                                
+b. Extents of each part:                        
+   - Ears: rows 1-3, cols 17-31                 
+   - Head: rows 3-9, cols 12-36                 
+   - Eyes: row 5, cols 19-29                    
+   - Muzzle: rows 7-8, cols 22-26               
+   - Body: rows 10-23, cols 5-43                
+   - Front Paws: rows 14-18, cols 15-33         
+   - Hind Feet: rows 20-23, cols 7-41           
+                                                
+c. Character usage:                             
+   - Verticals: `|` for the sides of the head, p
+   - Horizontals: `-` and `_` for the tops of th
+                                                
+                                                
+                                                

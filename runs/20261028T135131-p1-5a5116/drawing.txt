@@ -1,0 +1,24 @@
+a. Dog parts:                                   
+   - Head and Snout: rows 6-11, cols 12-26      
+   - Ear: rows 5-10, cols 10-14                 
+   - Eye: row 8, col 20                         
+   - Body (Back, Chest, and Belly): rows 10-19, 
+   - Legs (Two front, two back): rows 19-23, col
+   - Tail: rows 9-14, cols 40-46                
+                                                
+b. Coordinates:                                 
+   - Ear: rows 5-10, cols 10-14                 
+   - Head: rows 6-11, cols 14-23                
+   - Snout: rows 9-11, cols 23-26               
+   - Neck: rows 10-12, cols 14-18               
+   - Back: row 10, cols 18-40                   
+   - Tail: rows 9-14, cols 40-46                
+   - Belly: row 19, cols 17-39                  
+   - Front Legs: rows 19-23, cols 17-23         
+   - Back Legs: rows 19-23, cols 33-39          
+                                                
+c                                               
+                                                
+                                                
+                                                
+                                                

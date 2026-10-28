@@ -1,0 +1,45 @@
+Step 1 -- plan:
+a. Parts to draw: Head (including ears and snout), Neck (with mane), Body (torso and back), Tail, and four Legs (front and back pairs).
+b. Extents:
+   - Ears: rows 2-4, cols 14-17
+   - Head/Snout: rows 4-8, cols 8-16
+   - Neck: rows 6-12, cols 15-22
+   - Mane: rows 5-11, cols 20-23
+   - Body: rows 11-18, cols 20-42
+   - Tail: rows 12-19, cols 42-47
+   - Front Legs: rows 18-23, cols 21-26
+   - Back Legs: rows 18-23, cols 36-41
+c. Character mapping:
+   - Verticals: `|`
+   - Horizontals: `_` and `-`
+   - Diagonals: `/` and `\`
+   - Curves/Joints: `(`, `)`, `7`, `L`, `J`
+   - Mane/Tail texture: `~`, `*`, `,`
+   - Eye: `o`
+
+Step 2 -- draw:
+```
+              /|  /|
+             | \_/ |
+           /        \
+          |  o    __ \
+          |      /_ \ \
+           \____/  \ \ \~~
+                    \ \ \  ~
+                     \ \ \  ~
+                      \ \ \  ~
+                       \ \ \__
+              __________\ \   \
+             /                 \_____
+            /                        \___
+           /                             \~~
+          |                               |~
+          |                               | ~
+          |        ______________________/  ~
+           \      /      /      /          /
+            |    |      |    |  |    |    |
+            |    |      |    |  |    |    |
+            |    |      |    |  |    |    |
+            |____|      |____|  |____|    |____
+            [____]      [____]  [____]    [____]
+```
